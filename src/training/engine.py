@@ -31,6 +31,9 @@ class Trainer:
         self.logger = logger
         self.run_dir = run_dir
         self.channels_last = channels_last
+        training_cfg = cfg.get("training", {})
+        self.max_train_steps = training_cfg.get("max_train_steps")
+        self.max_val_batches = training_cfg.get("max_val_batches")
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
@@ -130,6 +133,9 @@ class Trainer:
                     loss_meter.avg,
                 )
 
+            if self.max_train_steps and batch_idx >= self.max_train_steps:
+                break
+
         return loss_meter.avg
 
     def _validate(self, loader: DataLoader) -> Tuple[float, float]:
@@ -138,7 +144,7 @@ class Trainer:
         self.metric_tracker.reset()
 
         with torch.no_grad():
-            for images, targets in loader:
+            for batch_idx, (images, targets) in enumerate(loader, start=1):
                 images = images.to(self.device, non_blocking=True)
                 if self.channels_last:
                     images = images.to(memory_format=torch.channels_last)
@@ -149,6 +155,9 @@ class Trainer:
 
                 loss_meter.update(loss.item(), images.size(0))
                 self.metric_tracker.update(targets, outputs)
+
+                if self.max_val_batches and batch_idx >= self.max_val_batches:
+                    break
 
         metric = self.metric_tracker.compute()
         return loss_meter.avg, metric

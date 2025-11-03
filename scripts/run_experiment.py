@@ -2,11 +2,17 @@
 
 import argparse
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Any, Dict
 
 import torch
 import yaml
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 
 from src.data.datamodule import create_dataloaders
 from src.models.factory import create_model
