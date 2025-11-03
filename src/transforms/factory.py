@@ -19,12 +19,23 @@ def create_transforms(cfg: Dict[str, Any], is_train: bool):
                 scale=tuple(aug_cfg.get("random_resized_crop_scale", (0.9, 1.0))),
                 ratio=tuple(aug_cfg.get("random_resized_crop_ratio", (0.9, 1.1))),
             ),
+        ]
+
+        if aug_cfg.get("random_rotate90", False):
+            transforms.append(
+                A.RandomRotate90(p=aug_cfg.get("random_rotate90_prob", 1.0))
+            )
+
+        transforms.append(
             A.Rotate(
                 limit=aug_cfg.get("max_rotate", 0),
                 border_mode=cv2.BORDER_CONSTANT,
                 value=(0, 0, 0),
-                p=0.8,
-            ),
+                p=aug_cfg.get("rotate_prob", 0.8),
+            )
+        )
+
+        transforms.append(
             A.Affine(
                 scale=tuple(aug_cfg.get("affine_scale", (0.95, 1.05))),
                 translate_percent=tuple(aug_cfg.get("affine_translate", (0.02, 0.02))),
@@ -33,8 +44,8 @@ def create_transforms(cfg: Dict[str, Any], is_train: bool):
                 mode=cv2.BORDER_CONSTANT,
                 fit_output=False,
                 p=0.5,
-            ),
-        ]
+            )
+        )
 
         if aug_cfg.get("horizontal_flip", False):
             flip_prob = aug_cfg.get("horizontal_flip_prob", 0.5)

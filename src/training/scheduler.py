@@ -35,6 +35,24 @@ def create_scheduler(
             )
 
         return cosine_scheduler
+    if name == "steplr":
+        step_size = scheduler_cfg.get("step_size", max(1, epochs // 3))
+        gamma = scheduler_cfg.get("gamma", 0.1)
+        return torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=step_size,
+            gamma=gamma,
+        )
+    if name == "multistep":
+        milestones = scheduler_cfg.get("milestones")
+        gamma = scheduler_cfg.get("gamma", 0.1)
+        if not milestones:
+            # Default: drop twice at 50% and 75% of total epochs
+            milestones = [int(epochs * 0.5), int(epochs * 0.75)]
+        return torch.optim.lr_scheduler.MultiStepLR(
+            optimizer,
+            milestones=milestones,
+            gamma=gamma,
+        )
 
     raise ValueError(f"Unsupported scheduler: {name}")
-

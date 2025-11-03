@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_45
+  name: swin_large_sampler_rotate_45_adam
   seed: 2024
   deterministic: false
 
@@ -61,10 +61,10 @@ loss:
   label_smoothing: 0.05
 
 optimizer:
-  name: adamw
+  name: adam
   lr: 0.00022
-  weight_decay: 0.02
   betas: [0.9, 0.999]
+  weight_decay: 0.02
 
 scheduler:
   name: cosine

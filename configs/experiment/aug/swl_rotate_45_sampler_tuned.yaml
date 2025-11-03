@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_45
+  name: swin_large_sampler_rotate_45_sampler_tuned
   seed: 2024
   deterministic: false
 
@@ -30,8 +30,8 @@ split:
 
 sampler:
   name: weighted_random
-  minority_classes: [1, 13, 14]
-  weights_power: 0.85
+  minority_classes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  weights_power: 1.2
   replacement: true
 
 augmentations:

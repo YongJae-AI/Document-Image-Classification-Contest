@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_45
+  name: swin_large_sampler_rotate_45_steplr
   seed: 2024
   deterministic: false
 
@@ -67,9 +67,9 @@ optimizer:
   betas: [0.9, 0.999]
 
 scheduler:
-  name: cosine
-  warmup_epochs: 3
-  min_lr: 1.0e-6
+  name: steplr
+  step_size: 4
+  gamma: 0.6
 
 training:
   epochs: 18

@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_45
+  name: swin_large_sampler_rotate_limit45
   seed: 2024
   deterministic: false
 
@@ -35,8 +35,9 @@ sampler:
   replacement: true
 
 augmentations:
-  name: rot45_affine_rrc
+  name: rot_limit45_affine_rrc
   max_rotate: 45
+  rotate_prob: 1.0
   affine_scale: [0.9, 1.1]
   affine_translate: [0.05, 0.05]
   random_resized_crop_scale: [0.9, 1.0]
