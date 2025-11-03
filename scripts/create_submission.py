@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
+import os
+import sys
 from pathlib import Path
 from typing import Any, Dict
 
@@ -8,6 +10,10 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 
 from src.data.dataset import DocumentDataset
 from src.models.factory import create_model
