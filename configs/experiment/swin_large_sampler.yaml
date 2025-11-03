@@ -1,6 +1,7 @@
 experiment:
   name: swin_large_sampler
   seed: 2024
+  deterministic: false
 
 paths:
   data_root: data/raw
@@ -84,3 +85,9 @@ logging:
 submission:
   metric_name: f1
   leaderboard_score: 0.0
+
+performance:
+  allow_tf32: true
+  matmul_precision: high
+  cudnn_benchmark: true
+  channels_last: true

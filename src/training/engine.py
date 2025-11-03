@@ -20,6 +20,7 @@ class Trainer:
         metric_tracker: MetricTracker,
         logger,
         run_dir: Path,
+        channels_last: bool = False,
     ) -> None:
         self.cfg = cfg
         self.model = model
@@ -29,6 +30,7 @@ class Trainer:
         self.metric_tracker = metric_tracker
         self.logger = logger
         self.run_dir = run_dir
+        self.channels_last = channels_last
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
@@ -97,6 +99,8 @@ class Trainer:
 
         for batch_idx, (images, targets) in enumerate(loader, start=1):
             images = images.to(self.device, non_blocking=True)
+            if self.channels_last:
+                images = images.to(memory_format=torch.channels_last)
             targets = targets.to(self.device, non_blocking=True)
 
             self.optimizer.zero_grad(set_to_none=True)
@@ -136,6 +140,8 @@ class Trainer:
         with torch.no_grad():
             for images, targets in loader:
                 images = images.to(self.device, non_blocking=True)
+                if self.channels_last:
+                    images = images.to(memory_format=torch.channels_last)
                 targets = targets.to(self.device, non_blocking=True)
 
                 outputs = self.model(images)
@@ -163,4 +169,3 @@ class Trainer:
     def _log_metrics(self, summary: Dict[str, Any]) -> None:
         with self.metrics_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(summary) + "\n")
-

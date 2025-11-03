@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
+import torch
 import yaml
 
 from src.data.datamodule import create_dataloaders
@@ -15,6 +16,7 @@ from src.training.optim import create_optimizer
 from src.training.scheduler import create_scheduler
 from src.utils.logging import create_logger
 from src.utils.metrics import MetricTracker
+from src.utils.performance import configure_performance
 from src.utils.run_naming import build_run_name
 from src.utils.seed import seed_everything
 
@@ -56,7 +58,10 @@ def main() -> None:
     if args.output_root is not None:
         cfg["paths"]["output_root"] = args.output_root
 
-    seed_everything(cfg["experiment"]["seed"])
+    seed_everything(
+        cfg["experiment"]["seed"], cfg["experiment"].get("deterministic", True)
+    )
+    configure_performance(cfg)
 
     output_root = Path(cfg["paths"]["output_root"]).resolve()
     run_name = build_run_name(cfg)
@@ -72,6 +77,8 @@ def main() -> None:
 
     (train_loader, valid_loader), class_weights = create_dataloaders(cfg)
     model = create_model(cfg)
+    if cfg.get("performance", {}).get("channels_last", False):
+        model = model.to(memory_format=torch.channels_last)
     criterion = create_loss(cfg, class_weights=class_weights)
     optimizer = create_optimizer(cfg, model)
     scheduler = create_scheduler(cfg, optimizer)
@@ -86,6 +93,7 @@ def main() -> None:
         metric_tracker=metric_tracker,
         logger=logger,
         run_dir=run_dir,
+        channels_last=cfg.get("performance", {}).get("channels_last", False),
     )
 
     best_metric = trainer.fit(train_loader=train_loader, valid_loader=valid_loader)

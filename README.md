@@ -65,6 +65,7 @@ tests/                 # 자동화 테스트
    - 실행 시 `outputs/runs/<타임스탬프>_.../` 가 생성되고, `config.yaml`, `train.log`, `metrics.jsonl`, `checkpoints/best.pth` 가 저장됩니다.
    - 러닝 이름 규칙은 `학습시간_모델명_입력이미지크기_증강태그_정규화태그_lsXX_스케줄러` 입니다.
      - `no-reg` 는 mixup/cutmix 를 비활성화한 설정을 의미합니다.
+   - `performance` 설정을 통해 TF32, cuDNN benchmark, channels-last 메모리 포맷을 활성화하여 GPU 활용을 최적화했습니다.
 
 2. **제출 파일 생성**
    ```bash
