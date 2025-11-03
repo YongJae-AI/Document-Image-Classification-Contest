@@ -79,6 +79,10 @@ training:
   validation_interval: 1
   max_train_steps: 10
   max_val_batches: 5
+  early_stopping:
+    patience: 1
+    min_delta: 0.0005
+    mode: max
 
 logging:
   project: document_type_classification

@@ -20,5 +20,6 @@
   - 기본 제외 목록: `2b1076abe3e4338d.jpg`, `be53872196b3ae1d.jpg`, `f176f6c25b7bd8ae.jpg`, `f0fc4e2f239e236b.jpg`
   - 증강 파이프라인: CLAHE, MotionBlur, ISO Noise, Perspective (밝기/대비 보정 포함).
   - 생성된 샘플과 레이블은 `data/raw/special_augmented_samples.csv` 에 기록됩니다.
+- **학습 제어**: `training.early_stopping` 으로 patience/min_delta를 설정하여 F1 개선이 정체되면 자동으로 학습을 멈출 수 있습니다.
 
 > 추후 실험에서는 Fold 편차를 완화하기 위해 seed 다양화, 희소 클래스 증강 조정, focal loss 비교 등을 고려합니다.

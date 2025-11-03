@@ -77,6 +77,10 @@ training:
   grad_clip_norm: null
   save_best_metric: f1
   validation_interval: 1
+  early_stopping:
+    patience: 3
+    min_delta: 0.0005
+    mode: max
 
 logging:
   project: document_type_classification

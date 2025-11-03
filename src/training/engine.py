@@ -34,6 +34,10 @@ class Trainer:
         training_cfg = cfg.get("training", {})
         self.max_train_steps = training_cfg.get("max_train_steps")
         self.max_val_batches = training_cfg.get("max_val_batches")
+        self.early_stopping_cfg = training_cfg.get("early_stopping") or {}
+        self.early_mode = self.early_stopping_cfg.get("mode", "max")
+        self.early_patience = self.early_stopping_cfg.get("patience")
+        self.early_min_delta = self.early_stopping_cfg.get("min_delta", 0.0)
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
@@ -54,8 +58,9 @@ class Trainer:
         train_loader: DataLoader,
         valid_loader: DataLoader,
     ) -> float:
-        best_metric = 0.0
+        best_metric = float("-inf") if self.early_mode == "max" else float("inf")
         best_epoch = -1
+        patience_counter = 0
 
         epochs = self.cfg["training"]["epochs"]
         log_interval = self.cfg["logging"]["log_interval"]
@@ -76,10 +81,15 @@ class Trainer:
             }
             self._log_metrics(epoch_summary)
 
-            if metric > best_metric:
+            improved = self._is_improved(metric, best_metric)
+
+            if improved:
                 best_metric = metric
                 best_epoch = epoch
                 self._save_checkpoint(epoch, best_metric)
+                patience_counter = 0
+            else:
+                patience_counter += 1 if self.early_patience is not None else 0
 
             self.logger.info(
                 "Epoch %d/%d - train_loss: %.4f - val_loss: %.4f - %s: %.4f",
@@ -90,6 +100,19 @@ class Trainer:
                 self.metric_tracker.primary_metric,
                 metric,
             )
+
+            if (
+                self.early_patience is not None
+                and patience_counter >= self.early_patience
+            ):
+                self.logger.info(
+                    "Early stopping triggered (patience %d)", self.early_patience
+                )
+                break
+
+        if best_epoch == -1:
+            best_metric = metric
+            best_epoch = epoch
 
         self.logger.info("Best epoch: %d (%.4f)", best_epoch, best_metric)
         return best_metric
@@ -178,3 +201,13 @@ class Trainer:
     def _log_metrics(self, summary: Dict[str, Any]) -> None:
         with self.metrics_file.open("a", encoding="utf-8") as f:
             f.write(json.dumps(summary) + "\n")
+
+    def _is_improved(self, metric: float, best: float) -> bool:
+        if self.early_mode == "max":
+            if best == float("-inf"):
+                return True
+            return metric > best + self.early_min_delta
+        else:
+            if best == float("inf"):
+                return True
+            return metric < best - self.early_min_delta
