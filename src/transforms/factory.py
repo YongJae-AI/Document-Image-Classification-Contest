@@ -37,7 +37,8 @@ def create_transforms(cfg: Dict[str, Any], is_train: bool):
         ]
 
         if aug_cfg.get("horizontal_flip", False):
-            transforms.append(A.HorizontalFlip(p=0.5))
+            flip_prob = aug_cfg.get("horizontal_flip_prob", 0.5)
+            transforms.append(A.HorizontalFlip(p=flip_prob))
 
         brightness_limit, contrast_limit = aug_cfg.get("brightness_contrast", (0.0, 0.0))
         if brightness_limit > 0 or contrast_limit > 0:
@@ -66,4 +67,3 @@ def create_transforms(cfg: Dict[str, Any], is_train: bool):
             ToTensorV2(),
         ]
     return A.Compose(transforms)
-

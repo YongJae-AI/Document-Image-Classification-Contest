@@ -1,0 +1,97 @@
+experiment:
+  name: swin_large_sampler_rotate_30
+  seed: 2024
+  deterministic: false
+
+paths:
+  data_root: data/raw
+  train_csv: data/raw/train.csv
+  meta_csv: data/raw/meta.csv
+  image_dir: data/raw/train
+  test_dir: data/raw/test
+  output_root: outputs
+
+data:
+  num_classes: 17
+  input_size: 384
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  loader:
+    batch_size: 8
+    num_workers: 8
+    pin_memory: true
+    persistent_workers: true
+    prefetch_factor: 2
+
+split:
+  n_splits: 6
+  fold_index: 4
+  seed: 2024
+
+sampler:
+  name: weighted_random
+  minority_classes: [1, 13, 14]
+  weights_power: 0.85
+  replacement: true
+
+augmentations:
+  name: rot60_affine_rrc
+  max_rotate: 30
+  affine_scale: [0.9, 1.1]
+  affine_translate: [0.05, 0.05]
+  random_resized_crop_scale: [0.9, 1.0]
+  random_resized_crop_ratio: [0.9, 1.1]
+  horizontal_flip: true
+  brightness_contrast: [0.1, 0.1]
+  blur_prob: 0.1
+
+regularization:
+  mixup_alpha: 0.0
+  cutmix_alpha: 0.0
+  tag: no-reg
+
+model:
+  name: swin_large_patch4_window12_384
+  pretrained: true
+  checkpoint: null
+  drop_path_rate: 0.2
+
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+
+optimizer:
+  name: adamw
+  lr: 0.00022
+  weight_decay: 0.02
+  betas: [0.9, 0.999]
+
+scheduler:
+  name: cosine
+  warmup_epochs: 3
+  min_lr: 1.0e-6
+
+training:
+  epochs: 18
+  amp: true
+  grad_clip_norm: null
+  save_best_metric: f1
+  validation_interval: 1
+  early_stopping:
+    patience: 3
+    min_delta: 0.0005
+    mode: max
+
+logging:
+  project: document_type_classification
+  log_interval: 50
+
+submission:
+  metric_name: f1
+  leaderboard_score: 0.0
+
+performance:
+  allow_tf32: true
+  matmul_precision: high
+  cudnn_benchmark: true
+  channels_last: true
