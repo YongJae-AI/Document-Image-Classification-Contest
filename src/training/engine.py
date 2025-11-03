@@ -1,0 +1,166 @@
+import json
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
+
+import torch
+from torch.cuda.amp import GradScaler, autocast
+from torch.utils.data import DataLoader
+
+from src.utils.metrics import AverageMeter, MetricTracker
+
+
+class Trainer:
+    def __init__(
+        self,
+        cfg: Dict[str, Any],
+        model: torch.nn.Module,
+        criterion: torch.nn.Module,
+        optimizer: torch.optim.Optimizer,
+        scheduler: Optional[torch.optim.lr_scheduler._LRScheduler],
+        metric_tracker: MetricTracker,
+        logger,
+        run_dir: Path,
+    ) -> None:
+        self.cfg = cfg
+        self.model = model
+        self.criterion = criterion
+        self.optimizer = optimizer
+        self.scheduler = scheduler
+        self.metric_tracker = metric_tracker
+        self.logger = logger
+        self.run_dir = run_dir
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
+
+        if hasattr(self.criterion, "to"):
+            self.criterion = self.criterion.to(self.device)
+
+        self.scaler = GradScaler(
+            enabled=cfg["training"].get("amp", False) and torch.cuda.is_available()
+        )
+
+        self.checkpoint_dir = self.run_dir / "checkpoints"
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        self.metrics_file = self.run_dir / "metrics.jsonl"
+
+    def fit(
+        self,
+        train_loader: DataLoader,
+        valid_loader: DataLoader,
+    ) -> float:
+        best_metric = 0.0
+        best_epoch = -1
+
+        epochs = self.cfg["training"]["epochs"]
+        log_interval = self.cfg["logging"]["log_interval"]
+
+        for epoch in range(1, epochs + 1):
+            train_loss = self._train_one_epoch(train_loader, epoch, log_interval)
+            val_loss, metric = self._validate(valid_loader)
+
+            if self.scheduler is not None:
+                self.scheduler.step()
+
+            epoch_summary = {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                self.metric_tracker.primary_metric: metric,
+                "lr": self.optimizer.param_groups[0]["lr"],
+            }
+            self._log_metrics(epoch_summary)
+
+            if metric > best_metric:
+                best_metric = metric
+                best_epoch = epoch
+                self._save_checkpoint(epoch, best_metric)
+
+            self.logger.info(
+                "Epoch %d/%d - train_loss: %.4f - val_loss: %.4f - %s: %.4f",
+                epoch,
+                epochs,
+                train_loss,
+                val_loss,
+                self.metric_tracker.primary_metric,
+                metric,
+            )
+
+        self.logger.info("Best epoch: %d (%.4f)", best_epoch, best_metric)
+        return best_metric
+
+    def _train_one_epoch(
+        self, loader: DataLoader, epoch: int, log_interval: int
+    ) -> float:
+        self.model.train()
+        loss_meter = AverageMeter("train_loss")
+
+        for batch_idx, (images, targets) in enumerate(loader, start=1):
+            images = images.to(self.device, non_blocking=True)
+            targets = targets.to(self.device, non_blocking=True)
+
+            self.optimizer.zero_grad(set_to_none=True)
+
+            with autocast(enabled=self.scaler.is_enabled()):
+                outputs = self.model(images)
+                loss = self.criterion(outputs, targets)
+
+            self.scaler.scale(loss).backward()
+
+            grad_clip = self.cfg["training"].get("grad_clip_norm")
+            if grad_clip is not None:
+                self.scaler.unscale_(self.optimizer)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+
+            loss_meter.update(loss.item(), images.size(0))
+
+            if batch_idx % log_interval == 0 or batch_idx == len(loader):
+                self.logger.info(
+                    "[Epoch %d] Step %d/%d - loss: %.4f",
+                    epoch,
+                    batch_idx,
+                    len(loader),
+                    loss_meter.avg,
+                )
+
+        return loss_meter.avg
+
+    def _validate(self, loader: DataLoader) -> Tuple[float, float]:
+        self.model.eval()
+        loss_meter = AverageMeter("val_loss")
+        self.metric_tracker.reset()
+
+        with torch.no_grad():
+            for images, targets in loader:
+                images = images.to(self.device, non_blocking=True)
+                targets = targets.to(self.device, non_blocking=True)
+
+                outputs = self.model(images)
+                loss = self.criterion(outputs, targets)
+
+                loss_meter.update(loss.item(), images.size(0))
+                self.metric_tracker.update(targets, outputs)
+
+        metric = self.metric_tracker.compute()
+        return loss_meter.avg, metric
+
+    def _save_checkpoint(self, epoch: int, metric: float) -> None:
+        checkpoint = {
+            "epoch": epoch,
+            "model_state": self.model.state_dict(),
+            "optimizer_state": self.optimizer.state_dict(),
+            "scheduler_state": self.scheduler.state_dict()
+            if self.scheduler is not None
+            else None,
+            "metric": metric,
+        }
+        path = self.checkpoint_dir / "best.pth"
+        torch.save(checkpoint, path)
+
+    def _log_metrics(self, summary: Dict[str, Any]) -> None:
+        with self.metrics_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(summary) + "\n")
+
