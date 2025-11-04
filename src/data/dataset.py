@@ -37,15 +37,20 @@ class DocumentDataset(Dataset):
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+        label = None
+        if self.is_train and self.target_col in row:
+            label = int(row[self.target_col])
+
         if self.transforms:
-            augmented = self.transforms(image=image)
+            if label is not None:
+                augmented = self.transforms(image=image, label=label)
+            else:
+                augmented = self.transforms(image=image)
             image = augmented["image"]
         else:
             image = torch.from_numpy(np.transpose(image, (2, 0, 1))).float() / 255.0
 
-        if self.is_train and self.target_col in row:
-            label = int(row[self.target_col])
+        if label is not None:
             return image, label
 
         return image, row[self.image_col]
-

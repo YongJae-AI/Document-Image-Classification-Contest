@@ -4,8 +4,10 @@ from typing import Any, Dict, Optional, Tuple
 
 import torch
 from torch.cuda.amp import GradScaler, autocast
+from torch.optim.swa_utils import AveragedModel
 from torch.utils.data import DataLoader
 
+from src.utils.ema import ModelEma
 from src.utils.metrics import AverageMeter, MetricTracker
 
 
@@ -32,6 +34,7 @@ class Trainer:
         self.run_dir = run_dir
         self.channels_last = channels_last
         training_cfg = cfg.get("training", {})
+        self.total_epochs = int(training_cfg.get("epochs", 1))
         self.max_train_steps = training_cfg.get("max_train_steps")
         self.max_val_batches = training_cfg.get("max_val_batches")
         self.early_stopping_cfg = training_cfg.get("early_stopping") or {}
@@ -52,6 +55,24 @@ class Trainer:
         self.checkpoint_dir = self.run_dir / "checkpoints"
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.metrics_file = self.run_dir / "metrics.jsonl"
+
+        ema_cfg = training_cfg.get("ema") or {}
+        self.ema: Optional[ModelEma] = None
+        if ema_cfg.get("enabled", False):
+            decay = float(ema_cfg.get("decay", 0.9999))
+            self.ema = ModelEma(self.model, decay=decay)
+
+        swa_cfg = training_cfg.get("swa") or {}
+        self.swa_model: Optional[AveragedModel] = None
+        self.swa_start_epoch = 0
+        self.swa_update_interval = 1
+        self.swa_updates = 0
+        if swa_cfg.get("enabled", False):
+            self.swa_start_epoch = int(
+                swa_cfg.get("start_epoch", max(1, self.total_epochs - 5))
+            )
+            self.swa_update_interval = int(swa_cfg.get("update_interval", 1))
+            self.swa_model = AveragedModel(self.model)
 
     def fit(
         self,
@@ -102,6 +123,14 @@ class Trainer:
             )
 
             if (
+                self.swa_model is not None
+                and epoch >= self.swa_start_epoch
+                and (epoch - self.swa_start_epoch) % self.swa_update_interval == 0
+            ):
+                self.swa_model.update_parameters(self.model)
+                self.swa_updates += 1
+
+            if (
                 self.early_patience is not None
                 and patience_counter >= self.early_patience
             ):
@@ -113,6 +142,26 @@ class Trainer:
         if best_epoch == -1:
             best_metric = metric
             best_epoch = epoch
+
+        if self.swa_model is not None and self.swa_updates > 0:
+            self.logger.info("Evaluating SWA averaged weights")
+            original_state = {
+                k: v.detach().clone() for k, v in self.model.state_dict().items()
+            }
+            self.swa_model.to(self.device)
+            self.swa_model.copy_to(self.model)
+            swa_val_loss, swa_metric = self._validate(valid_loader)
+            self.logger.info(
+                "SWA - val_loss: %.4f - %s: %.4f",
+                swa_val_loss,
+                self.metric_tracker.primary_metric,
+                swa_metric,
+            )
+            if self._is_improved(swa_metric, best_metric):
+                best_metric = swa_metric
+                best_epoch = epochs + 1
+                self._save_checkpoint(best_epoch, best_metric)
+            self.model.load_state_dict(original_state, strict=False)
 
         self.logger.info("Best epoch: %d (%.4f)", best_epoch, best_metric)
         return best_metric
@@ -145,6 +194,9 @@ class Trainer:
             self.scaler.step(self.optimizer)
             self.scaler.update()
 
+            if self.ema is not None:
+                self.ema.update(self.model)
+
             loss_meter.update(loss.item(), images.size(0))
 
             if batch_idx % log_interval == 0 or batch_idx == len(loader):
@@ -162,6 +214,12 @@ class Trainer:
         return loss_meter.avg
 
     def _validate(self, loader: DataLoader) -> Tuple[float, float]:
+        ema_applied = False
+        if self.ema is not None:
+            self.ema.store(self.model)
+            self.ema.copy_to(self.model)
+            ema_applied = True
+
         self.model.eval()
         loss_meter = AverageMeter("val_loss")
         self.metric_tracker.reset()
@@ -183,6 +241,10 @@ class Trainer:
                     break
 
         metric = self.metric_tracker.compute()
+
+        if ema_applied:
+            self.ema.restore(self.model)
+
         return loss_meter.avg, metric
 
     def _save_checkpoint(self, epoch: int, metric: float) -> None:
@@ -195,6 +257,12 @@ class Trainer:
             else None,
             "metric": metric,
         }
+        if self.ema is not None:
+            checkpoint["ema_state"] = self.ema.state_dict()
+        if self.swa_model is not None and self.swa_updates > 0:
+            checkpoint["swa_state"] = {
+                k: v.detach().cpu() for k, v in self.swa_model.state_dict().items()
+            }
         path = self.checkpoint_dir / "best.pth"
         torch.save(checkpoint, path)
 

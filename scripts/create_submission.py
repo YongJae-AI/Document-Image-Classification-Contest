@@ -78,8 +78,16 @@ def load_config(args: argparse.Namespace) -> Dict[str, Any]:
 def load_checkpoint(model: torch.nn.Module, checkpoint_path: Path, device: torch.device) -> float:
     state = torch.load(checkpoint_path, map_location=device)
     metric = state.get("metric", 0.0)
-    model_state = state.get("model_state") or state
-    model.load_state_dict(model_state, strict=False)
+    ema_state = state.get("ema_state")
+    if ema_state:
+        model.load_state_dict(ema_state, strict=False)
+    else:
+        swa_state = state.get("swa_state")
+        if swa_state:
+            model.load_state_dict(swa_state, strict=False)
+        else:
+            model_state = state.get("model_state") or state
+            model.load_state_dict(model_state, strict=False)
     return metric
 
 
