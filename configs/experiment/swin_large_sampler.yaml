@@ -35,8 +35,11 @@ sampler:
   replacement: true
 
 augmentations:
-  name: rot60_affine_rrc
-  max_rotate: 60
+  name: rot90_jitter_affine_rrc
+  random_rotate90: true
+  random_rotate90_prob: 1.0
+  max_rotate: 12
+  rotate_prob: 1.0
   affine_scale: [0.9, 1.1]
   affine_translate: [0.05, 0.05]
   random_resized_crop_scale: [0.9, 1.0]
@@ -89,6 +92,10 @@ logging:
 submission:
   metric_name: f1
   leaderboard_score: 0.0
+  tta:
+    enabled: true
+    rotations: [0, 90, 180, 270]
+    jitter_degrees: 0
 
 performance:
   allow_tf32: true

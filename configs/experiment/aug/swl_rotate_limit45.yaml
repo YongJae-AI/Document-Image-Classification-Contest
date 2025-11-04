@@ -90,6 +90,10 @@ logging:
 submission:
   metric_name: f1
   leaderboard_score: 0.0
+  tta:
+    enabled: true
+    rotations: [0, 90, 180, 270]
+    jitter_degrees: 0
 
 performance:
   allow_tf32: true

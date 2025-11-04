@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 import torch
 import yaml
+from torchvision.transforms import InterpolationMode
+from torchvision.transforms import functional as F
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -125,12 +127,58 @@ def main() -> None:
 
     all_probs = []
     image_ids = []
+    tta_cfg = cfg.get("submission", {}).get("tta", {})
+    tta_enabled = tta_cfg.get("enabled", False)
+    rotations = tta_cfg.get("rotations", [0]) if tta_enabled else [0]
+    jitter = float(tta_cfg.get("jitter_degrees", 0) or 0)
+
+    tta_angles = []
+    for base in rotations:
+        base = float(base)
+        tta_angles.append(base)
+        if jitter > 0:
+            tta_angles.extend([base - jitter, base + jitter])
+    if not tta_angles:
+        tta_angles = [0.0]
+    # Normalize angles to range [-180, 180) to avoid redundant rotations
+    normalized_angles = []
+    for angle in tta_angles:
+        a = ((angle + 180) % 360) - 180
+        normalized_angles.append(round(a, 2))
+    unique_angles = sorted(set(normalized_angles))
 
     with torch.no_grad():
         for images, ids in test_loader:
             images = images.to(device, non_blocking=True)
-            outputs = model(images)
-            probs = torch.softmax(outputs, dim=1)
+            tta_probs = []
+            for angle in unique_angles:
+                if abs(angle) < 1e-4:
+                    rotated = images
+                else:
+                    mod_angle = angle % 360
+                    # Use fast integer rotations when possible
+                    if abs((mod_angle % 90)) < 1e-4:
+                        k = int(round(mod_angle / 90)) % 4
+                        rotated = torch.rot90(images, k=k, dims=(2, 3))
+                    else:
+                        rotated = torch.stack(
+                            [
+                                F.rotate(
+                                    img,
+                                    angle,
+                                    interpolation=InterpolationMode.BILINEAR,
+                                    fill=0.0,
+                                )
+                                for img in images
+                            ],
+                            dim=0,
+                        )
+                outputs = model(rotated)
+                tta_probs.append(torch.softmax(outputs, dim=1))
+            if len(tta_probs) == 1:
+                probs = tta_probs[0]
+            else:
+                probs = torch.stack(tta_probs, dim=0).mean(dim=0)
             all_probs.append(probs.cpu().numpy())
             image_ids.extend(ids)
 

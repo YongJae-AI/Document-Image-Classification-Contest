@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_random90_jitter
+  name: swin_large_sampler_rot90_dp0_1
   seed: 2024
   deterministic: false
 
@@ -51,13 +51,13 @@ augmentations:
 regularization:
   mixup_alpha: 0.0
   cutmix_alpha: 0.0
-  tag: no-reg
+  tag: no-reg_dp0.1
 
 model:
   name: swin_large_patch4_window12_384
   pretrained: true
   checkpoint: null
-  drop_path_rate: 0.2
+  drop_path_rate: 0.1
 
 loss:
   name: cross_entropy

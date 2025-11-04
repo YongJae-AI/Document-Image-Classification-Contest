@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_sampler_rotate_random90_jitter
+  name: swin_large_sampler_rot90_bs16
   seed: 2024
   deterministic: false
 
@@ -17,7 +17,7 @@ data:
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
   loader:
-    batch_size: 8
+    batch_size: 16
     num_workers: 8
     pin_memory: true
     persistent_workers: true
@@ -51,7 +51,7 @@ augmentations:
 regularization:
   mixup_alpha: 0.0
   cutmix_alpha: 0.0
-  tag: no-reg
+  tag: no-reg_bs16
 
 model:
   name: swin_large_patch4_window12_384
