@@ -7,13 +7,9 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
-outputs/
-experiments/
 *.ipynb_checkpoints/
 # data
 data/raw/data.tar.gz
 data/raw/train/*.jpg
 data/raw/test/*.jpg
-submissions/*.csv
-outputs/**/*.npy
 baseline/baseline_code.tar.gz

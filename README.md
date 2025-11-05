@@ -60,9 +60,10 @@ tests/                 # 자동화 테스트
 
 1. **단일 Fold 학습**
    ```bash
-   python scripts/run_experiment.py --config configs/experiment/swin_large_sampler.yaml --fold 4
+   python scripts/run_experiment.py --config configs/baseline_ema.yaml
    ```
    - 실행 시 `outputs/runs/<타임스탬프>_.../` 가 생성되고, `config.yaml`, `train.log`, `metrics.jsonl`, `checkpoints/best.pth` 가 저장됩니다.
+   - EMA/Temperature Scaling 제출 기준은 `configs/baseline_ema.yaml`, SWA 실험 기준은 `configs/baseline_swa.yaml` 을 사용합니다.
    - 러닝 이름 규칙은 `학습시간_모델명_입력이미지크기_증강태그_정규화태그_lsXX_스케줄러` 입니다.
      - `no-reg` 는 mixup/cutmix 를 비활성화한 설정을 의미합니다.
    - `performance` 설정을 통해 TF32, cuDNN benchmark, channels-last 메모리 포맷을 활성화하여 GPU 활용을 최적화했습니다.
@@ -76,7 +77,14 @@ tests/                 # 자동화 테스트
    - 파일명은 `학습이름_f1_<CV>_result(<LB>).csv` 규칙을 따릅니다.
    - `--save-probs` 옵션을 주면 softmax 확률을 `outputs/logits/` 에 `.npy` 로 보관합니다.
 
-3. **소프트맥스 앙상블 (선택)**
+3. **온도 보정 + 제출 (권장)**
+   ```bash
+   python scripts/apply_temperature_scaling.py --run-dir outputs/runs/<run_dir_name> --temperature-json reports/run_history/<run_dir_name>_ts.json
+   ```
+   - 검증 세트를 이용해 단일 스칼라 온도를 추정하고, 보정된 확률로 제출 CSV 및 `.npy` 를 생성합니다.
+   - 결과 파일은 `<기존파일명>_tscaled.csv` 형태로 `outputs/submissions/` 에 저장되며, 온도 값은 옵션에 따라 JSON으로 보관할 수 있습니다.
+
+4. **소프트맥스 앙상블 (선택)**
    ```bash
    python scripts/ensemble_softmax.py --logits outputs/logits/<run1>.npy outputs/logits/<run2>.npy --tag swin_large_sampler_uniform
    ```
@@ -84,6 +92,18 @@ tests/                 # 자동화 테스트
    - 출력은 `outputs/ensembles/<timestamp>-ensemble_<tag>.csv` 형태입니다.
 
 설정 세부 요약은 `docs/training_notes.md` 를 참고하세요.
+
+### Run Metadata 백업
+
+GPU 서버 장애 등으로 `outputs/` 폴더가 사라져도 실험 이력을 복구할 수 있도록, 학습이 끝난 뒤 아래 스크립트로 핵심 메타데이터를 저장해 주세요.
+
+```bash
+python scripts/archive_run.py --run-dir outputs/runs/<run_dir_name> [--label lb0835]
+```
+
+- `config.yaml`, `metrics.jsonl`, `eval_metrics.json`, `train.log`(존재 시) 이 `reports/run_history/<run_dir_name>[_label]/` 에 복사됩니다.
+- `reports/run_history/` 는 Git 에 의해 추적되므로, 원격 저장소로 push 하면 실험 설정과 성능 기록을 안전하게 보관할 수 있습니다.
+- 동일한 폴더명으로 다시 보관하려면 `--force` 옵션을 사용해 덮어쓰세요.
 
 ## Competition Notes
 
