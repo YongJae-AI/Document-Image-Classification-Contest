@@ -16,6 +16,10 @@ data:
   input_size: 384
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
+  excluded_ids:
+    - 2b1076abe3e4338d.jpg
+    - a5ea50be18045857.jpg
+    - 024fe478044874ab.jpg
   loader:
     batch_size: 12
     num_workers: 8
@@ -27,6 +31,7 @@ split:
   n_splits: 6
   fold_index: 1
   seed: 2024
+  predefined_split: splits/fold_indices_v1.pkl
 
 sampler:
   name: weighted_random
@@ -36,7 +41,7 @@ sampler:
 
 augmentations:
   name: rot90_jitter_affine_rrc
-  random_resized_crop_scale: [0.9, 1.0]
+  random_resized_crop_scale: [0.8, 1.0]
   random_resized_crop_ratio: [0.9, 1.1]
   random_rotate90: true
   random_rotate90_prob: 1.0
@@ -88,7 +93,7 @@ training:
   ema:
     enabled: true
     decay: 0.9995
-    update_interval: 1
+    update_interval: 2
   swa:
     enabled: false
 

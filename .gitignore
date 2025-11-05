@@ -8,8 +8,15 @@ __pycache__/
 .idea/
 .vscode/
 *.ipynb_checkpoints/
-# data
-data/raw/data.tar.gz
-data/raw/train/*.jpg
-data/raw/test/*.jpg
+# data assets (downloadable from competition; keep repo lightweight)
+data/raw/
+!data/raw/README.md
+
+# large experiment artifacts
+outputs/
+!outputs/.gitkeep
+experiments/logs/
+submissions/
+
+# downloaded baselines or archives
 baseline/baseline_code.tar.gz

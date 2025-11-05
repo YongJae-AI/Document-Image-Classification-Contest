@@ -1,6 +1,6 @@
 experiment:
-  name: swin_large_patch4_window12_384
-  seed: 42
+  name: swin_large_patch4_window12_384_cv
+  seed: 2024
   deterministic: false
 
 paths:
@@ -30,7 +30,7 @@ data:
 split:
   n_splits: 6
   fold_index: 1
-  seed: 42
+  seed: 2024
   predefined_split: splits/fold_indices_v1.pkl
 
 sampler:
@@ -41,7 +41,7 @@ sampler:
 
 augmentations:
   name: rot90_jitter_affine_rrc
-  random_resized_crop_scale: [0.9, 1.0]
+  random_resized_crop_scale: [0.8, 1.0]
   random_resized_crop_ratio: [0.9, 1.1]
   random_rotate90: true
   random_rotate90_prob: 1.0
@@ -93,9 +93,7 @@ training:
   ema:
     enabled: false
   swa:
-    enabled: true
-    start_epoch: 13
-    update_interval: 1
+    enabled: false
 
 logging:
   project: document_type_classification

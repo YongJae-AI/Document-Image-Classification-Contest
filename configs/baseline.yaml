@@ -1,6 +1,6 @@
 experiment:
   name: swin_large_sampler
-  seed: 2024
+  seed: 42
   deterministic: false
 
 paths:
@@ -16,6 +16,10 @@ data:
   input_size: 384
   mean: [0.485, 0.456, 0.406]
   std: [0.229, 0.224, 0.225]
+  excluded_ids:
+    - 2b1076abe3e4338d.jpg
+    - a5ea50be18045857.jpg
+    - 024fe478044874ab.jpg
   loader:
     batch_size: 8
     num_workers: 8
@@ -26,7 +30,8 @@ data:
 split:
   n_splits: 6
   fold_index: 4
-  seed: 2024
+  seed: 42
+  predefined_split: splits/fold_indices_v1.pkl
 
 sampler:
   name: weighted_random

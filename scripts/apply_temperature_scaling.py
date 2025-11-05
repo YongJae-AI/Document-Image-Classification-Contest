@@ -130,10 +130,11 @@ class TemperatureScaler(nn.Module):
 
     def fit(self, logits: torch.Tensor, labels: torch.Tensor) -> None:
         criterion = nn.CrossEntropyLoss()
-        optimizer = LBFGS([self.log_temperature], lr=0.01, max_iter=50)
-
         logits = logits.detach()
         labels = labels.detach()
+        device = logits.device
+        self.to(device)
+        optimizer = LBFGS([self.log_temperature], lr=0.01, max_iter=50)
 
         def _closure():
             optimizer.zero_grad()

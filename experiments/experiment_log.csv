@@ -1,1 +1,7 @@
 run_id,config,fold,macro_f1_cv,macro_f1_lb,ema_decay,swa_start,notes
+20251105-063622_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_cv.yaml,0,0.9010,,None,None,"seed=42, 6-fold split v1, special-case aug applied, EMA off"
+20251105-064758_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_ema.yaml,0,0.9131,,0.9995,None,"EMA update_interval=2, seed=42"
+20251105-092910_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_cv.yaml,1,0.8988,,None,None,"seed=2024, wd=0.2, RRC[0.8,1.0]"
+20251105-093636_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_ema.yaml,1,0.9050,,0.9995,None,"seed=2024, wd=0.2, RRC[0.8,1.0], TS temp=0.8661"
+20251105-100203_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_cv.yaml,1,0.9058,,None,None,"seed=2024, wd=0.05, RRC[0.8,1.0]"
+20251105-101130_swin_large_patch4_window12_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/baseline_ema.yaml,1,0.8822,,0.9995,None,"seed=2024, wd=0.05, RRC[0.8,1.0], TS temp=0.6513"

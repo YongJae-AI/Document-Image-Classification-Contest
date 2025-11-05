@@ -46,6 +46,7 @@ tests/                 # 자동화 테스트
    - Git 사용자 정보가 등록되어 있는지 확인합니다.
    - 외부 데이터는 `data/external/` 에 보관하지 않습니다. (항상 비워둡니다.)
    - 환경 준비: `pip install -r requirements.txt`
+   - 학습 제외 대상(`2b1076abe3e4338d.jpg`, `a5ea50be18045857.jpg`, `024fe478044874ab.jpg`)은 config의 `data.excluded_ids` 로 자동 필터링됩니다.
 3. **특이 샘플 보강(선택)**
    ```bash
    python scripts/augment_special_cases.py

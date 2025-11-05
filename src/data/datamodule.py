@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
@@ -15,19 +16,35 @@ def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoade
 
     dataframe = pd.read_csv(cfg["paths"]["train_csv"])
 
-    splitter = StratifiedKFold(
-        n_splits=cfg["split"]["n_splits"],
-        shuffle=True,
-        random_state=cfg["split"]["seed"],
-    )
+    excluded_ids = set(cfg["data"].get("excluded_ids", []) or [])
+    if excluded_ids:
+        dataframe = dataframe[~dataframe["ID"].isin(excluded_ids)].reset_index(drop=True)
 
+    predefined_split = cfg["split"].get("predefined_split")
     train_indices, valid_indices = None, None
-    for fold, (train_idx, valid_idx) in enumerate(
-        splitter.split(dataframe["ID"], dataframe["target"])
-    ):
-        if fold == cfg["split"]["fold_index"]:
-            train_indices, valid_indices = train_idx, valid_idx
-            break
+    if predefined_split:
+        split_path = Path(predefined_split)
+        if not split_path.exists():
+            raise FileNotFoundError(f"Predefined split file not found: {split_path}")
+        with split_path.open("rb") as f:
+            splits = pickle.load(f)
+        if not (0 <= cfg["split"]["fold_index"] < len(splits)):
+            raise ValueError(
+                f"Fold index {cfg['split']['fold_index']} out of range for predefined splits."
+            )
+        train_indices, valid_indices = splits[cfg["split"]["fold_index"]]
+    else:
+        splitter = StratifiedKFold(
+            n_splits=cfg["split"]["n_splits"],
+            shuffle=True,
+            random_state=cfg["split"]["seed"],
+        )
+        for fold, (train_idx, valid_idx) in enumerate(
+            splitter.split(dataframe["ID"], dataframe["target"])
+        ):
+            if fold == cfg["split"]["fold_index"]:
+                train_indices, valid_indices = train_idx, valid_idx
+                break
 
     if train_indices is None or valid_indices is None:
         raise ValueError(f"Invalid fold index: {cfg['split']['fold_index']}")
