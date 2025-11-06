@@ -28,3 +28,5 @@ run_id,config,fold,macro_f1_cv,macro_f1_lb,ema_decay,swa_start,notes
 20251106-021609_hf_dit_base_224px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/dit_base.yaml,1,0.8517,,None,None,"DiT base 224, batch6, lr=5e-5"
 20251106-021622_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/swin_in22k_rrc08.yaml,1,0.9067,,None,None,"seed=2024, lr=8e-5, RRC[0.8,1.0]"
 20251106-022913_hf_dit_base_384_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/dit_base_384.yaml,1,0.7129,,None,None,"DiT base 384, batch4, lr=5e-5"
+20251106-041508_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/sampler_power_plus_cv.yaml,1,0.9074,,None,None,"seed=2024, weights_power=1.0"
+20251106-043113_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine,configs/sampler_power_minus_cv.yaml,1,0.8871,,None,None,"seed=2024, weights_power=0.70"

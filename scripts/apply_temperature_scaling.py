@@ -286,16 +286,14 @@ def main() -> None:
     base_name = run_dir.name
     submission_name = f"{build_submission_name(cfg, metric_value, leaderboard_score)}_{args.suffix}"
 
-    output_dir = Path(cfg["paths"]["output_root"]) / "submissions"
+    output_dir = Path("submissions")
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / f"{submission_name}.csv"
     submission_df = sample_df.copy()
     submission_df["target"] = preds
     submission_df.to_csv(csv_path, index=False)
 
-    probs_dir = Path(cfg["paths"]["output_root"]) / "logits"
-    probs_dir.mkdir(parents=True, exist_ok=True)
-    np.save(probs_dir / f"{submission_name}.npy", probs)
+    np.save(output_dir / f"{submission_name}.npy", probs)
 
     if args.temperature_json:
         report = {

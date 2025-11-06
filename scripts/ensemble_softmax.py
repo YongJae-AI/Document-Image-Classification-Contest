@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-root",
         type=str,
-        default="outputs",
+        default="submissions",
         help="Root directory to store ensembled submission.",
     )
     parser.add_argument(
@@ -80,7 +80,7 @@ def main() -> None:
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     strategy = args.tag or ("weighted" if args.weights else "uniform")
-    output_dir = Path(args.output_root) / "ensembles"
+    output_dir = Path(args.output_root)
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / f"{timestamp}-ensemble_{strategy}.csv"
     submission_df.to_csv(csv_path, index=False)
