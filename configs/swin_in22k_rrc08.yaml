@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_patch4_window12_384_in22k_cv
+  name: swin_large_patch4_window12_384_in22k_rrc08
   seed: 2024
   deterministic: false
 
@@ -41,7 +41,7 @@ sampler:
 
 augmentations:
   name: rot90_jitter_affine_rrc
-  random_resized_crop_scale: [0.9, 1.0]
+  random_resized_crop_scale: [0.8, 1.0]
   random_resized_crop_ratio: [0.9, 1.1]
   random_rotate90: true
   random_rotate90_prob: 1.0
@@ -72,7 +72,7 @@ loss:
 
 optimizer:
   name: adamw
-  lr: 0.0001
+  lr: 0.00008
   weight_decay: 0.05
   betas: [0.9, 0.999]
 

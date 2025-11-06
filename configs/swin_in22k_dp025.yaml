@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_patch4_window12_384_in22k_cv
+  name: swin_large_patch4_window12_384_in22k_dp025
   seed: 2024
   deterministic: false
 
@@ -63,7 +63,7 @@ model:
   name: swin_large_patch4_window12_384_in22k
   pretrained: true
   checkpoint: null
-  drop_path_rate: 0.2
+  drop_path_rate: 0.25
   use_checkpoint: true
 
 loss:
@@ -72,7 +72,7 @@ loss:
 
 optimizer:
   name: adamw
-  lr: 0.0001
+  lr: 0.00008
   weight_decay: 0.05
   betas: [0.9, 0.999]
 

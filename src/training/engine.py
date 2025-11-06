@@ -93,12 +93,13 @@ class Trainer:
             if self.scheduler is not None:
                 self.scheduler.step()
 
+            current_lr = self.optimizer.param_groups[0]["lr"]
             epoch_summary = {
                 "epoch": epoch,
                 "train_loss": train_loss,
                 "val_loss": val_loss,
                 self.metric_tracker.primary_metric: metric,
-                "lr": self.optimizer.param_groups[0]["lr"],
+                "lr": current_lr,
             }
             self._log_metrics(epoch_summary)
 
@@ -182,6 +183,8 @@ class Trainer:
 
             with autocast(enabled=self.scaler.is_enabled()):
                 outputs = self.model(images)
+                if hasattr(outputs, "logits"):
+                    outputs = outputs.logits
                 loss = self.criterion(outputs, targets)
 
             self.scaler.scale(loss).backward()
@@ -232,6 +235,8 @@ class Trainer:
                 targets = targets.to(self.device, non_blocking=True)
 
                 outputs = self.model(images)
+                if hasattr(outputs, "logits"):
+                    outputs = outputs.logits
                 loss = self.criterion(outputs, targets)
 
                 loss_meter.update(loss.item(), images.size(0))

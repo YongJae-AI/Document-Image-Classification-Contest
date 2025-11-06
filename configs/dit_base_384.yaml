@@ -1,5 +1,5 @@
 experiment:
-  name: swin_large_patch4_window12_384_in22k_cv
+  name: dit_base_patch16_384
   seed: 2024
   deterministic: false
 
@@ -14,14 +14,14 @@ paths:
 data:
   num_classes: 17
   input_size: 384
-  mean: [0.485, 0.456, 0.406]
-  std: [0.229, 0.224, 0.225]
+  mean: [0.5, 0.5, 0.5]
+  std: [0.5, 0.5, 0.5]
   excluded_ids:
     - 2b1076abe3e4338d.jpg
     - a5ea50be18045857.jpg
     - 024fe478044874ab.jpg
   loader:
-    batch_size: 12
+    batch_size: 4
     num_workers: 8
     pin_memory: true
     persistent_workers: true
@@ -52,7 +52,7 @@ augmentations:
   horizontal_flip: true
   horizontal_flip_prob: 0.5
   brightness_contrast: [0.1, 0.1]
-  blur_prob: 0.1
+  blur_prob: 0.0
 
 regularization:
   mixup_alpha: 0.0
@@ -60,11 +60,13 @@ regularization:
   tag: no-reg
 
 model:
-  name: swin_large_patch4_window12_384_in22k
-  pretrained: true
+  name: hf_dit_base_384
+  provider: huggingface
+  hf_name: microsoft/dit-base
+  gradient_checkpointing: true
+  interpolate_pos_encoding: true
+  image_size: 384
   checkpoint: null
-  drop_path_rate: 0.2
-  use_checkpoint: true
 
 loss:
   name: cross_entropy
@@ -72,13 +74,13 @@ loss:
 
 optimizer:
   name: adamw
-  lr: 0.0001
+  lr: 0.00005
   weight_decay: 0.05
   betas: [0.9, 0.999]
 
 scheduler:
   name: cosine
-  warmup_epochs: 3
+  warmup_epochs: 5
   min_lr: 1.0e-6
 
 training:
