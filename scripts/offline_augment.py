@@ -39,17 +39,24 @@ import pandas as pd
 from augraphy import (
     AugraphyPipeline,
     BleedThrough,
+    BrightnessTexturize,
     ColorPaper,
     Folding,
     Geometric,
     InkBleed,
     Jpeg,
     LightingGradient,
+    LowLightNoise,
     Markup,
+    Moire,
     NoiseTexturize,
+    OneOf,
+    PatternGenerator,
+    ReflectedLight,
     Rescale,
     Scribbles,
     ShadowCast,
+    VoronoiTessellation,
 )
 from tqdm.auto import tqdm
 
@@ -69,12 +76,18 @@ def select_profile(target: int, profiles: Dict[str, List[int]]) -> str:
 
 
 def plan_repeats_per_image(
-    df: pd.DataFrame, target_total: int, repeats_min_per_image: int
+    df: pd.DataFrame,
+    target_total: int,
+    repeats_min_per_image: int,
+    existing_counts: Dict[int, int] | None = None,
 ) -> Dict[str, int]:
     """클래스 균등 분배(target_total/n_classes) 기준으로 이미지별 증강 횟수 결정."""
     n_classes = df["target"].nunique()
     per_class_goal = math.ceil(target_total / n_classes)
-    counts = df["target"].value_counts().to_dict()
+    if existing_counts is None:
+        counts = df["target"].value_counts().to_dict()
+    else:
+        counts = existing_counts
 
     per_image_repeats: Dict[str, int] = {}
     by_class: Dict[int, List[str]] = defaultdict(list)
@@ -83,7 +96,9 @@ def plan_repeats_per_image(
 
     for cls, ids in by_class.items():
         need = max(0, per_class_goal - counts.get(cls, 0))
-        if not ids:
+        if not ids or need == 0:
+            for img in ids:
+                per_image_repeats[img] = 0
             continue
         base, rem = divmod(need, len(ids))
         for idx, img in enumerate(ids):
@@ -119,6 +134,42 @@ def random_scribbles(profile: str) -> Scribbles:
     )
 
 
+def random_bleedthrough(profile: str, rng: np.random.Generator) -> BleedThrough | None:
+    if profile == "non_doc":
+        return None
+    alpha = float(rng.uniform(0.08, 0.2))
+    offsets = (
+        int(rng.integers(6, 21)),
+        int(rng.integers(6, 21)),
+    )
+    return BleedThrough(
+        intensity_range=(0.08, 0.3) if profile == "doc" else (0.05, 0.25),
+        color_range=(32, 224),
+        ksize=(17, 17),
+        sigmaX=1,
+        alpha=alpha,
+        offsets=offsets,
+        p=0.35 if profile != "card_like" else 0.25,
+    )
+
+
+def random_color_paper(profile: str) -> ColorPaper:
+    if profile == "non_doc":
+        hue = (5, 12)
+        saturation = (4, 10)
+    elif profile == "card_like":
+        hue = (10, 20)
+        saturation = (6, 14)
+    else:
+        hue = (12, 28)
+        saturation = (8, 20)
+    return ColorPaper(
+        hue_range=hue,
+        saturation_range=saturation,
+        p=0.3 if profile != "non_doc" else 0.4,
+    )
+
+
 def build_pipeline(profile: str, rng: np.random.Generator) -> AugraphyPipeline:
     """프로필별 AugraphyPipeline."""
     ink_phase = []
@@ -138,64 +189,157 @@ def build_pipeline(profile: str, rng: np.random.Generator) -> AugraphyPipeline:
 
     paper_phase: List = []
     if profile != "non_doc":
+        paper_phase.append(random_color_paper(profile))
         paper_phase.append(
-            ColorPaper(
-                hue_range=(20, 40) if profile == "doc" else (15, 30),
-                saturation_range=(8, 25),
-                p=0.7,
+            OneOf(
+                [
+                    Moire(
+                        moire_density=(15, 20),
+                        moire_blend_method="normal",
+                        moire_blend_alpha=0.1,
+                        p=0.35,
+                    ),
+                    PatternGenerator(
+                        imgx=int(rng.integers(256, 513)),
+                        imgy=int(rng.integers(256, 513)),
+                        n_rotation_range=(10, 15),
+                        color="random",
+                        alpha_range=(0.25, 0.5),
+                        p=0.35,
+                    ),
+                    VoronoiTessellation(
+                        mult_range=(50, 80),
+                        num_cells_range=(500, 800),
+                        noise_type="random",
+                        background_value=(200, 256),
+                        p=0.3,
+                    ),
+                ],
+                p=0.3,
             )
         )
-        paper_phase.append(NoiseTexturize(sigma_range=(2, 6), turbulence_range=(2, 4), p=0.4))
+        paper_phase.append(
+            OneOf(
+                [
+                    NoiseTexturize(
+                        sigma_range=(5, 12),
+                        turbulence_range=(3, 8),
+                        texture_width_range=(80, 400),
+                        texture_height_range=(80, 400),
+                        p=0.5,
+                    ),
+                    BrightnessTexturize(texturize_range=(0.8, 0.99), deviation=0.02, p=0.5),
+                ],
+                p=0.65,
+            )
+        )
+    else:
+        paper_phase.append(random_color_paper(profile))
 
-    post_phase = []
+    post_phase: List = []
+    bleed = random_bleedthrough(profile, rng)
+    if bleed is not None:
+        post_phase.append(bleed)
     if profile != "non_doc":
-        post_phase.append(
-            BleedThrough(
-                intensity_range=(0.05, 0.3),
-                color_range=(0, 200),
-                alpha=0.25,
-                offsets=(16, 16),
-                p=0.2,
-            )
-        )
         post_phase.append(
             Folding(
                 fold_count=1 if profile == "card_like" else 2,
-                fold_angle_range=(-6, 6),
+                fold_angle_range=(-8, 8),
                 gradient_width=(0.1, 0.2),
                 gradient_height=(0.01, 0.03),
-                p=0.15,
+                p=0.2,
             )
         )
 
-    post_phase.extend(
-        [
-            LightingGradient(
-                mode="gaussian",
-                max_brightness=255,
-                min_brightness=120,
-                transparency=None,
-                p=0.35,
-            ),
-            ShadowCast(
-                shadow_opacity_range=(0.2, 0.45),
-                shadow_blur_kernel_range=(51, 151),
-                p=0.2,
-            ),
-            Geometric(
-                scale=(0.95, 1.05),
-                translation=(0.02, 0.05),
-                fliplr=0.3 if profile != "non_doc" else 0.2,
-                flipud=0.0,
-                rotate_range=(-12, 12),
-                padding=[0, 0, 0, 0],
-                randomize=1,
-                p=1.0,
-            ),
-            Rescale(target_dpi=int(rng.integers(260, 330))),
-            Jpeg(quality_range=(80, 96), p=0.25 if profile != "card_like" else 0.2),
-        ]
+    post_phase.append(
+        OneOf(
+            [
+                LightingGradient(
+                    light_position=None,
+                    direction=90,
+                    max_brightness=255,
+                    min_brightness=0,
+                    mode="gaussian",
+                    transparency=0.5,
+                    p=0.25,
+                ),
+                LowLightNoise(
+                    num_photons_range=(60, 120),
+                    alpha_range=(0.7, 0.9),
+                    beta_range=(10, 30),
+                    gamma_range=(1.0, 1.8),
+                    p=0.25,
+                ),
+                ReflectedLight(
+                    reflected_light_smoothness=0.8,
+                    reflected_light_internal_radius_range=(0.0, 0.2),
+                    reflected_light_external_radius_range=(0.1, 0.8),
+                    reflected_light_minor_major_ratio_range=(0.9, 1.0),
+                    reflected_light_color=(255, 255, 255),
+                    reflected_light_internal_max_brightness_range=(0.9, 1.0),
+                    reflected_light_external_max_brightness_range=(0.9, 0.95),
+                    reflected_light_location="random",
+                    reflected_light_ellipse_angle_range=(0, 360),
+                    reflected_light_gaussian_kernel_size_range=(5, 151),
+                    p=0.25,
+                ),
+                ShadowCast(
+                    shadow_side="bottom",
+                    shadow_vertices_range=(2, 3),
+                    shadow_width_range=(0.5, 0.8),
+                    shadow_height_range=(0.5, 0.8),
+                    shadow_color=(0, 0, 0),
+                    shadow_opacity_range=(0.4, 0.6),
+                    shadow_iterations_range=(1, 2),
+                    shadow_blur_kernel_range=(101, 201),
+                    p=0.25,
+                ),
+            ],
+            p=0.4,
+        )
     )
+
+    geom_options: List[Geometric] = [
+        Geometric(
+            scale=(0.92, 1.08),
+            translation=(0.02, 0.06),
+            fliplr=0.35 if profile != "non_doc" else 0.2,
+            flipud=0.05,
+            rotate_range=(-18, 18),
+            padding=[0, 0, 0, 0],
+            randomize=1,
+            p=1.0,
+        )
+    ]
+    if profile != "non_doc":
+        geom_options.extend(
+            [
+                Geometric(
+                    scale=(0.92, 1.05),
+                    translation=(0.01, 0.03),
+                    fliplr=0.1,
+                    flipud=0.02,
+                    rotate_range=(82, 98),
+                    padding=[0, 0, 0, 0],
+                    randomize=1,
+                    p=1.0,
+                ),
+                Geometric(
+                    scale=(0.92, 1.05),
+                    translation=(0.01, 0.03),
+                    fliplr=0.1,
+                    flipud=0.02,
+                    rotate_range=(-98, -82),
+                    padding=[0, 0, 0, 0],
+                    randomize=1,
+                    p=1.0,
+                ),
+            ]
+        )
+
+    post_phase.append(OneOf(geom_options, p=1.0))
+    post_phase.append(Rescale(target_dpi=int(rng.integers(260, 330))))
+    post_phase.append(Jpeg(quality_range=(78, 95), p=0.35 if profile != "card_like" else 0.25))
 
     pipeline = AugraphyPipeline(
         ink_phase=ink_phase,
@@ -205,6 +349,22 @@ def build_pipeline(profile: str, rng: np.random.Generator) -> AugraphyPipeline:
         random_seed=int(rng.integers(0, 2**31 - 1)),
     )
     return pipeline
+
+
+def _existing_aug_count(save_dir: Path, img_stem: str, tag: str) -> int:
+    existing = list(save_dir.glob(f"{img_stem}__aug*_{tag}.jpg"))
+    max_idx = -1
+    for path in existing:
+        name = path.stem
+        if "__aug" not in name:
+            continue
+        try:
+            idx_part = name.split("__aug", 1)[1]
+            idx = int(idx_part.split("_")[0])
+            max_idx = max(max_idx, idx)
+        except (ValueError, IndexError):
+            continue
+    return max_idx + 1
 
 
 def augment_and_save(
@@ -221,6 +381,9 @@ def augment_and_save(
         return []
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
     saved: List[str] = []
+    next_idx = _existing_aug_count(save_dir, img_path.stem, tag)
+    if repeats <= 0:
+        return saved
     for idx in range(repeats):
         pipeline = build_pipeline(profile, rng)
         result = pipeline.augment(image_rgb.copy())
@@ -228,7 +391,7 @@ def augment_and_save(
         if augmented is None:
             continue
         out_bgr = cv2.cvtColor(augmented, cv2.COLOR_RGB2BGR)
-        name = f"{img_path.stem}__aug{idx}_{tag}.jpg"
+        name = f"{img_path.stem}__aug{next_idx + idx}_{tag}.jpg"
         out_path = save_dir / name
         success, buf = cv2.imencode(".jpg", out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
         if not success:
@@ -247,6 +410,7 @@ def main():
     parser.add_argument("--tag", type=str, default=None)
     parser.add_argument("--limit", type=int, default=None, help="처리할 이미지 개수 (없으면 전체)")
     parser.add_argument("--offset", type=int, default=0, help="앞쪽에서 건너뛸 이미지 수")
+    parser.add_argument("--existing-csv", type=str, default=None, help="이미 생성된 오프라인 CSV 경로")
     args = parser.parse_args()
 
     cfg = load_cfg(Path(args.config))
@@ -258,10 +422,18 @@ def main():
     df = pd.read_csv(args.train_csv)
     image_dir = Path(args.image_dir)
 
+    existing_counts = None
+    existing_df = None
+    existing_csv_path = args.existing_csv or cfg.get("existing_csv")
+    if existing_csv_path and Path(existing_csv_path).exists():
+        existing_df = pd.read_csv(existing_csv_path)
+        existing_counts = existing_df["target"].value_counts().to_dict()
+
     repeats_map = plan_repeats_per_image(
         df=df,
         target_total=int(cfg.get("target_total", 25000)),
         repeats_min_per_image=int(cfg.get("repeats_min_per_image", 2)),
+        existing_counts=existing_counts,
     )
 
     profiles = cfg.get("profiles", {})
@@ -286,7 +458,11 @@ def main():
             records.append({"ID": name, "target": target, "source": img_id, "profile": profile})
 
     aug_df = pd.DataFrame.from_records(records)
-    merged = pd.concat([df.copy(), aug_df], ignore_index=True)
+    if existing_df is not None:
+        merged = pd.concat([existing_df, aug_df], ignore_index=True)
+        merged.drop_duplicates(subset=["ID"], inplace=True, keep="last")
+    else:
+        merged = pd.concat([df.copy(), aug_df], ignore_index=True)
     merged_csv = output_dir / "train_offline_aug.csv"
     merged.to_csv(merged_csv, index=False)
 

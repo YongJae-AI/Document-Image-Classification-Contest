@@ -1,5 +1,6 @@
-target_total: 8000
+target_total: 12000
 output_dir: data/processed/offline_aug
+existing_csv: data/processed/offline_aug/train_offline_aug.csv
 repeats_min_per_image: 2
 seed: 2024
 # 클래스별 증강 강도/프로필
