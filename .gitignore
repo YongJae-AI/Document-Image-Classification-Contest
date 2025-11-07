@@ -20,3 +20,8 @@ submissions/
 
 # downloaded baselines or archives
 baseline/baseline_code.tar.gz
+
+# Offline augmentation outputs
+data/processed/offline_aug/images/
+data/processed/offline_aug/train_offline_aug.csv
+data/processed/offline_aug/offline_aug_summary.csv

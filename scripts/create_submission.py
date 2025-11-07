@@ -138,6 +138,8 @@ def main() -> None:
     tta_cfg = cfg.get("submission", {}).get("tta", {})
     tta_enabled = tta_cfg.get("enabled", False)
     rotations = tta_cfg.get("rotations", [0]) if tta_enabled else [0]
+    hflip_enabled = bool(tta_cfg.get("horizontal_flip", False))
+    vflip_enabled = bool(tta_cfg.get("vertical_flip", False))
     jitter = float(tta_cfg.get("jitter_degrees", 0) or 0)
 
     tta_angles = []
@@ -154,6 +156,18 @@ def main() -> None:
         a = ((angle + 180) % 360) - 180
         normalized_angles.append(round(a, 2))
     unique_angles = sorted(set(normalized_angles))
+
+    flip_options = [(False, False)]
+    if hflip_enabled or vflip_enabled:
+        flip_options = []
+        h_options = [False, True] if hflip_enabled else [False]
+        v_options = [False, True] if vflip_enabled else [False]
+        for hf in h_options:
+            for vf in v_options:
+                if hf or vf:
+                    flip_options.append((hf, vf))
+        if (False, False) not in flip_options:
+            flip_options.insert(0, (False, False))
 
     with torch.no_grad():
         for images, ids in test_loader:
@@ -181,8 +195,14 @@ def main() -> None:
                             ],
                             dim=0,
                         )
-                outputs = model(rotated)
-                tta_probs.append(torch.softmax(outputs, dim=1))
+                for hf, vf in flip_options:
+                    aug = rotated
+                    if hf:
+                        aug = torch.flip(aug, dims=(3,))
+                    if vf:
+                        aug = torch.flip(aug, dims=(2,))
+                    outputs = model(aug)
+                    tta_probs.append(torch.softmax(outputs, dim=1))
             if len(tta_probs) == 1:
                 probs = tta_probs[0]
             else:

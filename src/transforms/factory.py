@@ -5,6 +5,13 @@ import albumentations as A
 import cv2
 from albumentations.pytorch import ToTensorV2
 
+from .divide_transforms import (
+    DivideSixParts,
+    DivideThreeParts,
+    HalfDivide,
+    QuarterDivide,
+)
+
 
 class TransformWrapper:
     def __init__(self, transform: A.Compose) -> None:
@@ -42,6 +49,8 @@ def create_transforms(cfg: Dict[str, Any], is_train: bool):
 
     if is_train:
         aug_cfg = copy.deepcopy(cfg["augmentations"])
+        if aug_cfg.get("use_reference_pipeline"):
+            return TransformWrapper(_build_reference_transform(aug_cfg, size, mean, std))
         class_overrides = aug_cfg.pop("class_overrides", [])
 
         default_transform = _build_train_transform(aug_cfg, size, mean, std)
@@ -119,8 +128,18 @@ def _build_train_transform(aug_cfg: Dict[str, Any], size: int, mean, std) -> A.C
             )
         )
 
+    # Blur: support legacy blur_prob and new dict config
     blur_prob = aug_cfg.get("blur_prob", 0.0)
-    if blur_prob > 0:
+    blur_cfg = aug_cfg.get("blur")
+    if blur_cfg:
+        transforms.append(
+            A.GaussianBlur(
+                p=float(blur_cfg.get("p", 0.0)),
+                blur_limit=tuple(blur_cfg.get("blur_limit", (3, 5))),
+                sigma_limit=tuple(blur_cfg.get("sigma_limit", (0.2, 0.8))),
+            )
+        )
+    elif blur_prob > 0:
         transforms.append(A.GaussianBlur(p=blur_prob))
 
     iso_cfg = aug_cfg.get("iso_noise")
@@ -257,3 +276,83 @@ def _build_train_transform(aug_cfg: Dict[str, Any], size: int, mean, std) -> A.C
         ]
     )
     return A.Compose(transforms)
+
+
+def _build_reference_transform(aug_cfg: Dict[str, Any], size: int, mean, std) -> A.Compose:
+    longest_size = max(size, size)
+    divide_transforms = A.OneOf(
+        [
+            QuarterDivide(p=0.2),
+            HalfDivide(p=0.2),
+            DivideThreeParts(p=0.2),
+            DivideSixParts(p=0.2),
+            A.RandomCrop(height=size // 2, width=size // 2, p=0.2),
+        ],
+        p=0.55,
+    )
+
+    strong_geom = A.OneOf(
+        [
+            A.RandomRotate90(p=0.2),
+            A.ShiftScaleRotate(
+                shift_limit_x=(-0.2, 0.2),
+                shift_limit_y=(-0.2, 0.2),
+                scale_limit=(-0.05, 0.05),
+                rotate_limit=(-60, 60),
+                interpolation=cv2.INTER_LINEAR,
+                border_mode=cv2.BORDER_CONSTANT,
+                value=(255, 255, 255),
+                rotate_method="largest_box",
+                p=0.3,
+            ),
+            A.Affine(
+                scale=(1.0, 1.6),
+                translate_percent=None,
+                rotate=(-45, 45),
+                shear=None,
+                keep_ratio=True,
+                fit_output=False,
+                mode=cv2.BORDER_CONSTANT,
+                cval=(255, 255, 255),
+                p=0.3,
+            ),
+            A.OpticalDistortion(
+                distort_limit=(-0.3, 0.3),
+                shift_limit=(-0.05, 0.05),
+                border_mode=cv2.BORDER_CONSTANT,
+                value=(255, 255, 255),
+                p=0.2,
+            ),
+        ],
+        p=0.6,
+    )
+
+    ref_transforms: List[A.BasicTransform] = [
+        A.Compose(
+            [
+                A.LongestMaxSize(max_size=longest_size, p=1.0),
+                A.PadIfNeeded(
+                    min_height=size,
+                    min_width=size,
+                    border_mode=cv2.BORDER_CONSTANT,
+                    value=(255, 255, 255),
+                    p=1.0,
+                ),
+                divide_transforms,
+            ],
+            p=0.6,
+        ),
+        A.OneOf(
+            [
+                A.HorizontalFlip(p=0.3),
+                A.VerticalFlip(p=0.3),
+                A.Transpose(p=0.4),
+            ],
+            p=0.6,
+        ),
+        strong_geom,
+        A.Resize(height=size, width=size, always_apply=True, p=1.0),
+        A.Normalize(mean=mean, std=std),
+        ToTensorV2(),
+    ]
+    return A.Compose(ref_transforms)

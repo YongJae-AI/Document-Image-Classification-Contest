@@ -145,11 +145,13 @@ class TemperatureScaler(nn.Module):
         optimizer.step(_closure)
 
 
-def angle_list_from_cfg(cfg: Dict[str, Any]) -> List[float]:
+def tta_settings_from_cfg(cfg: Dict[str, Any]) -> Tuple[List[float], List[Tuple[bool, bool]]]:
     tta_cfg = cfg.get("submission", {}).get("tta", {})
     if not tta_cfg.get("enabled", False):
-        return [0.0]
+        return [0.0], [(False, False)]
     rotations = tta_cfg.get("rotations", [0])
+    hflip_enabled = bool(tta_cfg.get("horizontal_flip", False))
+    vflip_enabled = bool(tta_cfg.get("vertical_flip", False))
     jitter = float(tta_cfg.get("jitter_degrees", 0) or 0)
     angles: List[float] = []
     for base in rotations:
@@ -161,13 +163,25 @@ def angle_list_from_cfg(cfg: Dict[str, Any]) -> List[float]:
         angles = [0.0]
     normalized = [round(((angle + 180) % 360) - 180, 2) for angle in angles]
     unique = sorted(set(normalized))
-    return unique
+    flip_options = [(False, False)]
+    if hflip_enabled or vflip_enabled:
+        flip_options = []
+        h_options = [False, True] if hflip_enabled else [False]
+        v_options = [False, True] if vflip_enabled else [False]
+        for hf in h_options:
+            for vf in v_options:
+                if hf or vf:
+                    flip_options.append((hf, vf))
+        if (False, False) not in flip_options:
+            flip_options.insert(0, (False, False))
+    return unique, flip_options
 
 
 def apply_tta(
     model: torch.nn.Module,
     images: torch.Tensor,
     angles: List[float],
+    flip_options: List[Tuple[bool, bool]],
 ) -> torch.Tensor:
     device = images.device
     logits_stack: List[torch.Tensor] = []
@@ -192,8 +206,14 @@ def apply_tta(
                     ],
                     dim=0,
                 )
-        outputs = model(rotated)
-        logits_stack.append(outputs)
+        for hf, vf in flip_options:
+            aug = rotated
+            if hf:
+                aug = torch.flip(aug, dims=(3,))
+            if vf:
+                aug = torch.flip(aug, dims=(2,))
+            outputs = model(aug)
+            logits_stack.append(outputs)
     if len(logits_stack) == 1:
         return logits_stack[0]
     return torch.stack(logits_stack, dim=0).mean(dim=0)
@@ -230,13 +250,13 @@ def generate_calibrated_submission(
         ),
     )
 
-    angles = angle_list_from_cfg(cfg)
+    angles, flip_options = tta_settings_from_cfg(cfg)
     all_probs: List[np.ndarray] = []
     image_ids: List[str] = []
     with torch.no_grad():
         for images, ids in test_loader:
             images = images.to(device, non_blocking=True)
-            logits = apply_tta(model, images, angles)
+            logits = apply_tta(model, images, angles, flip_options)
             scaled_logits = logits / max(temperature, 1e-3)
             probs = torch.softmax(scaled_logits, dim=1)
             all_probs.append(probs.cpu().numpy())

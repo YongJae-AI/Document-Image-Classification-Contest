@@ -1,0 +1,27 @@
+[
+  {
+    "feature": "rotation_offset_deg",
+    "train_board": "reports/eda/sample_boards/train_rotation_offset_deg_board.png",
+    "test_board": "reports/eda/sample_boards/test_rotation_offset_deg_board.png"
+  },
+  {
+    "feature": "margin_ratio",
+    "train_board": "reports/eda/sample_boards/train_margin_ratio_board.png",
+    "test_board": "reports/eda/sample_boards/test_margin_ratio_board.png"
+  },
+  {
+    "feature": "brightness_mean",
+    "train_board": "reports/eda/sample_boards/train_brightness_mean_board.png",
+    "test_board": "reports/eda/sample_boards/test_brightness_mean_board.png"
+  },
+  {
+    "feature": "laplacian_var",
+    "train_board": "reports/eda/sample_boards/train_laplacian_var_board.png",
+    "test_board": "reports/eda/sample_boards/test_laplacian_var_board.png"
+  },
+  {
+    "feature": "qr_seal_score",
+    "train_board": "reports/eda/sample_boards/train_qr_seal_score_board.png",
+    "test_board": "reports/eda/sample_boards/test_qr_seal_score_board.png"
+  }
+]

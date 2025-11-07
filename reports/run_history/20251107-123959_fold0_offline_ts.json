@@ -1,0 +1,7 @@
+{
+  "run_dir": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251107-123959_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine",
+  "checkpoint": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251107-123959_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine/checkpoints/best.pth",
+  "temperature": 0.9190201163291931,
+  "validation_samples": 1335,
+  "metric_value": 0.9790390830528954
+}
