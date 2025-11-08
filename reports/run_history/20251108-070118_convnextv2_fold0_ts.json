@@ -1,0 +1,7 @@
+{
+  "run_dir": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251108-070118_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine",
+  "checkpoint": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251108-070118_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine/checkpoints/best.pth",
+  "temperature": 0.9249714612960815,
+  "validation_samples": 2335,
+  "metric_value": 0.9900711381197984
+}
