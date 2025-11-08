@@ -8,6 +8,10 @@ from torch.optim.swa_utils import AveragedModel
 from torch.utils.data import DataLoader
 
 from src.utils.ema import ModelEma
+try:
+    from torch.utils.tensorboard import SummaryWriter  # type: ignore
+except Exception:  # tensorboard not installed
+    SummaryWriter = None  # type: ignore
 from src.utils.metrics import AverageMeter, MetricTracker
 
 
@@ -56,6 +60,14 @@ class Trainer:
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         self.metrics_file = self.run_dir / "metrics.jsonl"
 
+        # TensorBoard 지원 (선택)
+        tb_enabled = bool(cfg.get("logging", {}).get("tensorboard", False))
+        self.tb_writer = None
+        if tb_enabled and SummaryWriter is not None:
+            log_dir = self.run_dir / "tb"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            self.tb_writer = SummaryWriter(log_dir=str(log_dir))
+
         ema_cfg = training_cfg.get("ema") or {}
         self.ema: Optional[ModelEma] = None
         if ema_cfg.get("enabled", False):
@@ -102,6 +114,13 @@ class Trainer:
                 "lr": current_lr,
             }
             self._log_metrics(epoch_summary)
+
+            # TensorBoard 기록
+            if self.tb_writer is not None:
+                self.tb_writer.add_scalar("loss/train", train_loss, epoch)
+                self.tb_writer.add_scalar("loss/val", val_loss, epoch)
+                self.tb_writer.add_scalar(f"metric/{self.metric_tracker.primary_metric}", metric, epoch)
+                self.tb_writer.add_scalar("lr", current_lr, epoch)
 
             improved = self._is_improved(metric, best_metric)
 
@@ -165,6 +184,9 @@ class Trainer:
             self.model.load_state_dict(original_state, strict=False)
 
         self.logger.info("Best epoch: %d (%.4f)", best_epoch, best_metric)
+        if self.tb_writer is not None:
+            self.tb_writer.flush()
+            self.tb_writer.close()
         return best_metric
 
     def _train_one_epoch(
