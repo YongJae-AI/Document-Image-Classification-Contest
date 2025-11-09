@@ -1,0 +1,7 @@
+{
+  "run_dir": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251109-044541_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine",
+  "checkpoint": "/root/Computer_Vision_Contest-Private-/outputs/runs/20251109-044541_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine/checkpoints/best.pth",
+  "temperature": 0.8981103897094727,
+  "validation_samples": 2335,
+  "metric_value": 0.9624318395189595
+}

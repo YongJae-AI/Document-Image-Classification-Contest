@@ -1,0 +1,44 @@
+/opt/conda/lib/python3.10/site-packages/timm/models/_factory.py:117: UserWarning: Mapping deprecated model name tf_efficientnet_b7_ns to current tf_efficientnet_b7.ns_jft_in1k.
+  model = create_fn(
+/opt/conda/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at /opt/conda/conda-bld/pytorch_1695392020201/work/aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Traceback (most recent call last):
+  File "/root/Computer_Vision_Contest-Private-/scripts/create_submission.py", line 439, in <module>
+    main()
+  File "/root/Computer_Vision_Contest-Private-/scripts/create_submission.py", line 232, in main
+    images = swinir_denoiser(images, mean, std)
+  File "/root/Computer_Vision_Contest-Private-/scripts/create_submission.py", line 404, in __call__
+    denoised = self._run_inference(orig)
+  File "/root/Computer_Vision_Contest-Private-/scripts/create_submission.py", line 428, in _run_inference
+    out = self.model(x)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/root/SwinIR/models/network_swinir.py", line 835, in forward
+    res = self.conv_after_body(self.forward_features(x_first)) + x_first
+  File "/root/SwinIR/models/network_swinir.py", line 792, in forward_features
+    x = self.patch_embed(x)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/root/SwinIR/models/network_swinir.py", line 527, in forward
+    x = self.norm(x)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/normalization.py", line 196, in forward
+    return F.layer_norm(
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/functional.py", line 2543, in layer_norm
+    return torch.layer_norm(input, normalized_shape, weight, bias, eps, torch.backends.cudnn.enabled)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.58 GiB. GPU 0 has a total capacty of 23.69 GiB of which 34.00 MiB is free. Process 4033871 has 1.03 GiB memory in use. Process 4033869 has 14.59 GiB memory in use. Process 4033874 has 5.95 GiB memory in use. Process 4033872 has 1.03 GiB memory in use. Process 4033870 has 1.03 GiB memory in use. Of the allocated memory 5.64 GiB is allocated by PyTorch, and 6.63 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Traceback (most recent call last):
+  File "/root/Computer_Vision_Contest-Private-/scripts/submit_ms.py", line 30, in <module>
+    main()
+  File "/root/Computer_Vision_Contest-Private-/scripts/submit_ms.py", line 27, in main
+    subprocess.run(cmd, check=True)
+  File "/opt/conda/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/conda/bin/python', 'scripts/create_submission.py', '--config', 'configs/_tmp_ms_800.yaml', '--checkpoint', 'outputs/runs/20251109-044541_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine/checkpoints/best.pth', '--denoise', 'swinir', '--swinir-weights', '/root/SwinIR/experiments/pretrained_models/005_colorDN_DFWB_s128w8_SwinIR-M_noise15.pth', '--suffix', 'effb7_ms800_swinir15', '--skip-if-unchanged']' returned non-zero exit status 1.
