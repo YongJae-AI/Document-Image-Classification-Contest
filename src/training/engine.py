@@ -68,6 +68,9 @@ class Trainer:
             log_dir.mkdir(parents=True, exist_ok=True)
             self.tb_writer = SummaryWriter(log_dir=str(log_dir))
 
+        # 최근 검증 per-class 통계 캐시
+        self._last_per_class = None  # type: ignore
+
         ema_cfg = training_cfg.get("ema") or {}
         self.ema: Optional[ModelEma] = None
         if ema_cfg.get("enabled", False):
@@ -114,6 +117,15 @@ class Trainer:
                 "lr": current_lr,
             }
             self._log_metrics(epoch_summary)
+
+            # per-class 최신 통계 파일을 에폭명으로 스냅샷
+            try:
+                latest_path = self.run_dir / "per_class_latest.json"
+                epoch_path = self.run_dir / f"per_class_epoch{epoch:02d}.json"
+                if latest_path.exists():
+                    epoch_path.write_text(latest_path.read_text(encoding="utf-8"), encoding="utf-8")
+            except Exception:
+                pass
 
             # TensorBoard 기록
             if self.tb_writer is not None:
@@ -249,6 +261,11 @@ class Trainer:
         loss_meter = AverageMeter("val_loss")
         self.metric_tracker.reset()
 
+        # per-class buckets
+        num_classes = int(self.cfg["data"]["num_classes"])
+        per_class_total = [0] * num_classes
+        per_class_correct = [0] * num_classes
+
         with torch.no_grad():
             for batch_idx, (images, targets) in enumerate(loader, start=1):
                 images = images.to(self.device, non_blocking=True)
@@ -264,10 +281,31 @@ class Trainer:
                 loss_meter.update(loss.item(), images.size(0))
                 self.metric_tracker.update(targets, outputs)
 
+                # accumulate per-class counts
+                preds = outputs.argmax(dim=1)
+                for t, p in zip(targets, preds):
+                    ti = int(t.item())
+                    per_class_total[ti] += 1
+                    per_class_correct[ti] += int(ti == int(p.item()))
+
                 if self.max_val_batches and batch_idx >= self.max_val_batches:
                     break
 
         metric = self.metric_tracker.compute()
+
+        # cache + write latest per-class stats
+        try:
+            acc = [(c / t) if t else None for c, t in zip(per_class_correct, per_class_total)]
+            payload = {
+                "per_class_total": per_class_total,
+                "per_class_correct": per_class_correct,
+                "per_class_accuracy": acc,
+            }
+            self._last_per_class = payload
+            latest_path = self.run_dir / "per_class_latest.json"
+            latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            pass
 
         if ema_applied:
             self.ema.restore(self.model)
@@ -292,6 +330,15 @@ class Trainer:
             }
         path = self.checkpoint_dir / "best.pth"
         torch.save(checkpoint, path)
+        # 함께 per-class snapshot도 저장
+        try:
+            if self._last_per_class is not None:
+                (self.run_dir / "per_class_best.json").write_text(
+                    json.dumps(self._last_per_class, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+        except Exception:
+            pass
 
     def _log_metrics(self, summary: Dict[str, Any]) -> None:
         with self.metrics_file.open("a", encoding="utf-8") as f:

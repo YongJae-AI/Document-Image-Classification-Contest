@@ -13,7 +13,8 @@ data/raw/
 !data/raw/README.md
 
 # large experiment artifacts
-outputs/
+outputs/logits
+outputs/runs
 !outputs/.gitkeep
 experiments/logs/
 submissions/

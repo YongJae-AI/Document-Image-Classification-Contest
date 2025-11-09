@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -59,6 +60,30 @@ def parse_args() -> argparse.Namespace:
         "--save-probs",
         action="store_true",
         help="Save softmax probabilities alongside CSV.",
+    )
+    parser.add_argument(
+        "--denoise",
+        type=str,
+        default=None,
+        choices=[None, "swinir", "swinir_proxy"],
+        help="Optional test-time denoising backend.",
+    )
+    parser.add_argument(
+        "--swinir-weights",
+        type=str,
+        default=None,
+        help="Path to SwinIR weights (.pth) when using --denoise swinir.",
+    )
+    parser.add_argument(
+        "--suffix",
+        type=str,
+        default=None,
+        help="Optional suffix to append to submission filename (e.g., tta90_hflip).",
+    )
+    parser.add_argument(
+        "--skip-if-unchanged",
+        action="store_true",
+        help="If a previous submission for the same run has identical predictions, skip writing a new CSV.",
     )
     return parser.parse_args()
 
@@ -133,6 +158,16 @@ def main() -> None:
         ),
     )
 
+    mean = torch.tensor(cfg["data"].get("mean", [0.0, 0.0, 0.0]), dtype=torch.float32).view(1, -1, 1, 1).to(device)
+    std = torch.tensor(cfg["data"].get("std", [1.0, 1.0, 1.0]), dtype=torch.float32).view(1, -1, 1, 1).to(device)
+
+    swinir_denoiser = None
+    if args.denoise == "swinir":
+        weights_path = args.swinir_weights or os.environ.get("SWINIR_WEIGHTS")
+        if not weights_path:
+            raise ValueError("--swinir-weights or SWINIR_WEIGHTS env var must be provided when using SwinIR denoising")
+        swinir_denoiser = SwinIRDenoiser(weights_path, device)
+
     all_probs = []
     image_ids = []
     tta_cfg = cfg.get("submission", {}).get("tta", {})
@@ -169,9 +204,32 @@ def main() -> None:
         if (False, False) not in flip_options:
             flip_options.insert(0, (False, False))
 
+    use_denoise = args.denoise == "swinir_proxy"
+    use_swinir = args.denoise == "swinir"
+    if use_denoise:
+        import cv2
+
+        def _denoise_batch(t: torch.Tensor) -> torch.Tensor:
+            restored = (t * std + mean).clamp(0, 1)
+            b, c, h, w = restored.shape
+            out = []
+            t_cpu = restored.detach().cpu()
+            for i in range(b):
+                img = t_cpu[i].permute(1, 2, 0).numpy()
+                img8 = (np.clip(img, 0, 1) * 255.0).astype(np.uint8)
+                den = cv2.bilateralFilter(img8, d=5, sigmaColor=25, sigmaSpace=7)
+                denf = den.astype(np.float32) / 255.0
+                out.append(torch.from_numpy(denf).permute(2, 0, 1))
+            out_t = torch.stack(out, dim=0).to(t.device)
+            return (out_t - mean) / std
+
     with torch.no_grad():
         for images, ids in test_loader:
             images = images.to(device, non_blocking=True)
+            if use_denoise:
+                images = _denoise_batch(images)
+            if use_swinir and swinir_denoiser is not None:
+                images = swinir_denoiser(images, mean, std)
             tta_probs = []
             for angle in unique_angles:
                 if abs(angle) < 1e-4:
@@ -230,10 +288,38 @@ def main() -> None:
         leaderboard_score,
         base_name=base_name,
     )
+    if args.suffix:
+        submission_name = f"{submission_name}_{args.suffix}"
 
     output_dir = Path(cfg["paths"]["output_root"]) / "submissions"
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / f"{submission_name}.csv"
+    # Optional: skip writing if predictions unchanged vs latest CSV of the same run
+    if args.skip_if_unchanged and run_dir is not None:
+        import hashlib
+        output_dir = Path(cfg["paths"]["output_root"]) / "submissions"
+        def _hash_targets(df: pd.DataFrame) -> str:
+            # Hash in the order of sample submission IDs
+            data = (df["ID"].astype(str) + "," + df["target"].astype(str)).str.cat(sep="\n").encode()
+            return hashlib.sha256(data).hexdigest()
+
+        this_sig = _hash_targets(submission_df)
+        # find latest CSV with same run base name (prefix)
+        candidates = sorted(
+            [p for p in output_dir.glob(f"{run_dir.name}_*.csv")],
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        for prev in candidates:
+            try:
+                prev_df = pd.read_csv(prev)
+                prev_sig = _hash_targets(prev_df)
+                if prev_sig == this_sig:
+                    print(f"Predictions unchanged vs {prev.name}. Skipping write due to --skip-if-unchanged.")
+                    return
+            except Exception:
+                continue
+
     submission_df.to_csv(csv_path, index=False)
 
     if args.save_probs:
@@ -242,6 +328,111 @@ def main() -> None:
         np.save(probs_dir / f"{submission_name}.npy", probs_array)
 
     print(f"Saved submission to {csv_path}")
+
+
+class SwinIRDenoiser:
+    """Thin wrapper to run SwinIR denoising inside submission generation."""
+
+    def __init__(self, weights_path: str, device: torch.device) -> None:
+        self.device = device
+        self.weights_path = Path(weights_path)
+        swinir_root = Path("/root/SwinIR")
+        if swinir_root.exists() and str(swinir_root) not in sys.path:
+            sys.path.append(str(swinir_root))
+        from models.network_swinir import SwinIR as SwinIRModel  # type: ignore
+
+        config = self._infer_config(self.weights_path.name.lower())
+        self.config = config
+        self.model = self._build_model(SwinIRModel, config).to(device)
+        state = torch.load(self.weights_path, map_location=device)
+        key = config.get("param_key", "params")
+        if key in state:
+            state = state[key]
+        self.model.load_state_dict(state, strict=True)
+        self.model.eval()
+
+    @staticmethod
+    def _infer_config(name: str) -> Dict[str, Any]:
+        cfg: Dict[str, Any] = {
+            "scale": 1,
+            "img_range": 1.0,
+            "window_size": 8,
+            "in_chans": 3,
+            "task": "color_dn",
+            "param_key": "params",
+        }
+        noise_match = re.search(r"noise(\\d+)", name)
+        jpeg_match = re.search(r"jpeg(\\d+)", name)
+        if "colordn" in name:
+            cfg["task"] = "color_dn"
+            cfg["noise"] = int(noise_match.group(1)) if noise_match else 25
+        elif "colorcar" in name:
+            cfg["task"] = "color_jpeg_car"
+            cfg["jpeg"] = int(jpeg_match.group(1)) if jpeg_match else 40
+            cfg["img_range"] = 255.0
+            cfg["window_size"] = 7
+        elif "jpeg" in name:
+            cfg["task"] = "jpeg_car"
+            cfg["jpeg"] = int(jpeg_match.group(1)) if jpeg_match else 40
+            cfg["img_range"] = 255.0
+            cfg["window_size"] = 7
+            cfg["in_chans"] = 1
+        else:
+            raise ValueError(f"Unsupported SwinIR weights naming: {name}")
+        return cfg
+
+    def _build_model(self, model_cls, cfg: Dict[str, Any]):
+        common_kwargs = dict(
+            upscale=cfg["scale"],
+            in_chans=cfg["in_chans"],
+            img_size=128 if cfg["window_size"] == 8 else 126,
+            window_size=cfg["window_size"],
+            img_range=cfg["img_range"],
+            depths=[6, 6, 6, 6, 6, 6],
+            embed_dim=180,
+            num_heads=[6, 6, 6, 6, 6, 6],
+            mlp_ratio=2,
+            upsampler='',
+            resi_connection='1conv',
+        )
+        model = model_cls(**common_kwargs)
+        return model
+
+    def __call__(self, images: torch.Tensor, mean: torch.Tensor, std: torch.Tensor) -> torch.Tensor:
+        """images: normalized tensor (B,C,H,W)."""
+        orig = (images * std + mean).clamp(0, 1)
+        denoised = self._run_inference(orig)
+        denoised = denoised.clamp(0, 1)
+        return (denoised - mean) / std
+
+    def _run_inference(self, images: torch.Tensor) -> torch.Tensor:
+        x = images
+        cfg = self.config
+        original_channels = x.shape[1]
+        if cfg["in_chans"] == 1 and original_channels == 3:
+            # convert to luminance
+            luma = 0.299 * x[:, 0:1] + 0.587 * x[:, 1:2] + 0.114 * x[:, 2:3]
+            x = luma
+        if cfg["img_range"] == 255.0:
+            x = x * 255.0
+
+        _, _, h0, w0 = x.shape
+        pad_h = (cfg["window_size"] - h0 % cfg["window_size"]) % cfg["window_size"]
+        pad_w = (cfg["window_size"] - w0 % cfg["window_size"]) % cfg["window_size"]
+        if pad_h > 0:
+            x = torch.cat([x, torch.flip(x, [2])], dim=2)[:, :, : h0 + pad_h, :]
+        if pad_w > 0:
+            x = torch.cat([x, torch.flip(x, [3])], dim=3)[:, :, :, : w0 + pad_w]
+
+        with torch.no_grad():
+            out = self.model(x)
+
+        out = out[..., :h0, :w0]
+        if cfg["img_range"] == 255.0:
+            out = out / 255.0
+        if cfg["in_chans"] == 1 and original_channels == 3:
+            out = out.repeat(1, 3, 1, 1)
+        return out
 
 
 if __name__ == "__main__":

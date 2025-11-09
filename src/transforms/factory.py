@@ -342,14 +342,8 @@ def _build_reference_transform(aug_cfg: Dict[str, Any], size: int, mean, std) ->
             ],
             p=0.6,
         ),
-        A.OneOf(
-            [
-                A.HorizontalFlip(p=0.3),
-                A.VerticalFlip(p=0.3),
-                A.Transpose(p=0.4),
-            ],
-            p=0.6,
-        ),
+        # Flip 정책: 문서 도메인에서 수직/전치 플립은 비현실적이므로 수평만 유지
+        A.HorizontalFlip(p=0.6),
         strong_geom,
         A.Resize(height=size, width=size, always_apply=True, p=1.0),
         A.Normalize(mean=mean, std=std),
