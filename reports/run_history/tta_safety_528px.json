@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-11-09 16:22:15",
+  "model": "tf_efficientnet_b7_ns",
+  "tta": {
+    "scale_px": 528,
+    "rotations": [
+      0,
+      90,
+      180,
+      270
+    ],
+    "hflip": true,
+    "vflip": false,
+    "jitter": 0,
+    "denoise": "swinir_noise15"
+  },
+  "safety": {
+    "oom": false,
+    "gpu": "RTX 3090 24GB",
+    "infer_batch": 2,
+    "notes": "Run sequentially; no parallel SwinIR processes."
+  }
+}

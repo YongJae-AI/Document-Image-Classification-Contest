@@ -19,10 +19,12 @@ data:
   excluded_ids: []
   loader:
     batch_size: 6
-    num_workers: 8
+    num_workers: 6
     pin_memory: true
     persistent_workers: true
     prefetch_factor: 2
+    timeout: 120
+    mp_context: spawn
 
 split:
   n_splits: 6

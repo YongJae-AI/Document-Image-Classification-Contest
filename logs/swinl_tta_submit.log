@@ -1,0 +1,5 @@
+/opt/conda/lib/python3.10/site-packages/timm/models/_factory.py:117: UserWarning: Mapping deprecated model name swin_large_patch4_window12_384_in22k to current swin_large_patch4_window12_384.ms_in22k.
+  model = create_fn(
+/opt/conda/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at /opt/conda/conda-bld/pytorch_1695392020201/work/aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Saved submission to outputs/submissions/20251107-180447_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_0.9862_result(0.0000)_swinl_384_tta90_hflip_dn15.csv

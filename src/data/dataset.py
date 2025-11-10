@@ -15,11 +15,13 @@ class DocumentDataset(Dataset):
         image_dir: Path,
         transforms: Optional[Callable] = None,
         is_train: bool = True,
+        cache_dir: Optional[Path] = None,
     ) -> None:
         self.dataframe = dataframe.reset_index(drop=True)
         self.image_dir = Path(image_dir)
         self.transforms = transforms
         self.is_train = is_train
+        self.cache_dir = Path(cache_dir) if cache_dir is not None else None
 
         self.image_col = "ID"
         self.target_col = "target"
@@ -29,7 +31,17 @@ class DocumentDataset(Dataset):
 
     def __getitem__(self, index: int):
         row = self.dataframe.iloc[index]
-        image_path = self.image_dir / row[self.image_col]
+        image_id = str(row[self.image_col])
+        image_path = self.image_dir / image_id
+
+        # Optional cache: prefer cached PNG/JPG with same basename
+        if self.cache_dir is not None:
+            base = Path(image_id).stem
+            for ext in (".png", ".jpg", ".jpeg"):
+                cand = self.cache_dir / f"{base}{ext}"
+                if cand.exists():
+                    image_path = cand
+                    break
 
         image = cv2.imread(str(image_path))
         if image is None:
@@ -53,4 +65,4 @@ class DocumentDataset(Dataset):
         if label is not None:
             return image, label
 
-        return image, row[self.image_col]
+        return image, image_id

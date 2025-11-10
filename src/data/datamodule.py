@@ -3,6 +3,9 @@ from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import pandas as pd
+import torch
+import torch.multiprocessing as mp
+import cv2
 from sklearn.model_selection import StratifiedKFold
 from torch.utils.data import DataLoader
 
@@ -12,6 +15,15 @@ from src.transforms.factory import create_transforms
 
 
 def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoader], None]:
+    # Reduce thread contention that can cause DataLoader stalls
+    try:
+        cv2.setNumThreads(1)
+    except Exception:
+        pass
+    try:
+        torch.set_num_threads(1)
+    except Exception:
+        pass
     image_dir = Path(cfg["paths"]["image_dir"])
 
     dataframe = pd.read_csv(cfg["paths"]["train_csv"])
@@ -70,10 +82,19 @@ def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoade
 
     sampler = build_sampler(train_df["target"].values, cfg.get("sampler"))
     loader_cfg = cfg["data"]["loader"]
+    timeout = int(loader_cfg.get("timeout", 0))
+    mp_ctx_name = loader_cfg.get("mp_context", None)
+    mp_ctx = mp.get_context(mp_ctx_name) if mp_ctx_name else None
 
     prefetch_factor = loader_cfg.get("prefetch_factor", 2)
     if loader_cfg.get("num_workers", 0) == 0:
         prefetch_factor = None
+
+    common_kwargs = {}
+    if timeout:
+        common_kwargs["timeout"] = timeout
+    if mp_ctx is not None:
+        common_kwargs["multiprocessing_context"] = mp_ctx
 
     train_loader = DataLoader(
         train_dataset,
@@ -85,6 +106,7 @@ def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoade
         persistent_workers=loader_cfg.get("persistent_workers", False),
         prefetch_factor=prefetch_factor,
         drop_last=True,
+        **common_kwargs,
     )
 
     valid_loader = DataLoader(
@@ -95,6 +117,7 @@ def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoade
         pin_memory=loader_cfg.get("pin_memory", False),
         persistent_workers=loader_cfg.get("persistent_workers", False),
         prefetch_factor=prefetch_factor,
+        **common_kwargs,
     )
 
     return (train_loader, valid_loader), None

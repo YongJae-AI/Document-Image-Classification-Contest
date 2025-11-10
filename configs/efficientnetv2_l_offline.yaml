@@ -89,13 +89,13 @@ scheduler:
   min_lr: 1.0e-6
 
 training:
-  epochs: 22
+  epochs: 20
   amp: true
   grad_clip_norm: 1.0
   save_best_metric: f1
   validation_interval: 1
   early_stopping:
-    patience: 4
+    patience: 3
     min_delta: 0.0005
     mode: max
   ema:

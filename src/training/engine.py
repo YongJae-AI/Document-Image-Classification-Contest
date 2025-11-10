@@ -70,6 +70,7 @@ class Trainer:
 
         # 최근 검증 per-class 통계 캐시
         self._last_per_class = None  # type: ignore
+        self._last_confusion = None  # type: ignore
 
         ema_cfg = training_cfg.get("ema") or {}
         self.ema: Optional[ModelEma] = None
@@ -118,12 +119,75 @@ class Trainer:
             }
             self._log_metrics(epoch_summary)
 
+            # Print top-10 most misclassified classes for this epoch (descending by incorrect count)
+            try:
+                pc = self._last_per_class or {}
+                totals = pc.get("per_class_total", [])
+                corrects = pc.get("per_class_correct", [])
+                if totals and corrects and len(totals) == len(corrects):
+                    mis = [(i, int(t - c), int(t), (float(c) / float(t)) if t else None)
+                           for i, (t, c) in enumerate(zip(totals, corrects))]
+                    # sort by incorrect desc, then by total desc
+                    mis.sort(key=lambda x: (x[1], x[2]), reverse=True)
+                    topk = mis[:10]
+                    # build human-readable line
+                    parts = []
+                    for cls, inc, tot, acc in topk:
+                        if tot == 0:
+                            parts.append(f"{cls}: -/-")
+                        else:
+                            parts.append(f"{cls}: {inc}/{tot} (acc={acc:.3f})")
+                    self.logger.info("[Epoch %d] Top misclassified classes: %s", epoch, ", ".join(parts))
+            except Exception:
+                pass
+
             # per-class 최신 통계 파일을 에폭명으로 스냅샷
             try:
                 latest_path = self.run_dir / "per_class_latest.json"
                 epoch_path = self.run_dir / f"per_class_epoch{epoch:02d}.json"
                 if latest_path.exists():
                     epoch_path.write_text(latest_path.read_text(encoding="utf-8"), encoding="utf-8")
+            except Exception:
+                pass
+
+            # Save confusion matrix artifacts (npy + png) and per-class CSV for this epoch
+            try:
+                from pathlib import Path as _P
+                import numpy as _np
+                plots_dir = self.run_dir / "plots"
+                plots_dir.mkdir(parents=True, exist_ok=True)
+                if self._last_confusion is not None:
+                    cm = _np.array(self._last_confusion, dtype=_np.int64)
+                    (_P(plots_dir) / f"confusion_epoch{epoch:02d}.npy").write_bytes(cm.tobytes())
+                    # Also save as csv for Excel/PPT
+                    import pandas as _pd
+                    _pd.DataFrame(cm).to_csv(plots_dir / f"confusion_epoch{epoch:02d}.csv", index=False)
+                    # Try plotting heatmap (optional)
+                    try:
+                        import matplotlib
+                        matplotlib.use("Agg")
+                        import matplotlib.pyplot as _plt
+                        import seaborn as _sns
+                        _plt.figure(figsize=(7,6))
+                        _sns.heatmap(cm, cmap='Blues')
+                        _plt.title(f'Confusion (Val) True x Pred — epoch {epoch}')
+                        _plt.xlabel('Pred'); _plt.ylabel('True')
+                        _plt.tight_layout()
+                        _plt.savefig(plots_dir / f"confusion_epoch{epoch:02d}.png", dpi=150)
+                        _plt.close()
+                    except Exception:
+                        pass
+                # Per-class CSV snapshot
+                if self._last_per_class is not None:
+                    import pandas as _pd
+                    pc = self._last_per_class
+                    rows = []
+                    pct = pc.get("per_class_total", [])
+                    pcc = pc.get("per_class_correct", [])
+                    pca = pc.get("per_class_accuracy", [])
+                    for i in range(len(pct)):
+                        rows.append({"class": i, "total": pct[i], "correct": pcc[i], "accuracy": pca[i]})
+                    _pd.DataFrame(rows).to_csv(plots_dir / f"per_class_epoch{epoch:02d}.csv", index=False)
             except Exception:
                 pass
 
@@ -267,6 +331,8 @@ class Trainer:
         per_class_correct = [0] * num_classes
 
         with torch.no_grad():
+            # confusion matrix
+            cm = [[0 for _ in range(num_classes)] for _ in range(num_classes)]
             for batch_idx, (images, targets) in enumerate(loader, start=1):
                 images = images.to(self.device, non_blocking=True)
                 if self.channels_last:
@@ -281,12 +347,14 @@ class Trainer:
                 loss_meter.update(loss.item(), images.size(0))
                 self.metric_tracker.update(targets, outputs)
 
-                # accumulate per-class counts
+                # accumulate per-class counts and confusion
                 preds = outputs.argmax(dim=1)
                 for t, p in zip(targets, preds):
                     ti = int(t.item())
                     per_class_total[ti] += 1
                     per_class_correct[ti] += int(ti == int(p.item()))
+                    pi = int(p.item())
+                    cm[ti][pi] += 1
 
                 if self.max_val_batches and batch_idx >= self.max_val_batches:
                     break
@@ -302,6 +370,7 @@ class Trainer:
                 "per_class_accuracy": acc,
             }
             self._last_per_class = payload
+            self._last_confusion = cm
             latest_path = self.run_dir / "per_class_latest.json"
             latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:

@@ -1,0 +1,6 @@
+{
+  "run_dir": "outputs/runs/20251110-060511_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine",
+  "timestamp": "2025-11-10 11:06:07",
+  "temp": 0.9001955389976501,
+  "val_size": 2335
+}

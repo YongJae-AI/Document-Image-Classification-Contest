@@ -85,6 +85,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="If a previous submission for the same run has identical predictions, skip writing a new CSV.",
     )
+    parser.add_argument(
+        "--denoise-cache-dir",
+        type=str,
+        default=None,
+        help="Optional directory containing precomputed denoised test images (PNG/JPG). If provided, loader will prefer cache over raw.",
+    )
     return parser.parse_args()
 
 
@@ -142,6 +148,7 @@ def main() -> None:
         image_dir=Path(cfg["paths"]["test_dir"]),
         transforms=test_transforms,
         is_train=False,
+        cache_dir=Path(args.denoise_cache_dir) if args.denoise_cache_dir else None,
     )
 
     test_loader = torch.utils.data.DataLoader(

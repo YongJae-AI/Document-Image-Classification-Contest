@@ -1,0 +1,4 @@
+Run: 20251110-060511_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine
+Scale: 528
+Cache: data/cache/test_swinir_dn15
+Submission: 20251110-060511_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_0.9910_result(0.0000)_effb7_528_tta90_hflip_dn15cache.csv
