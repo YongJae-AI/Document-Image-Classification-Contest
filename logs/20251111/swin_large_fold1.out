@@ -1,0 +1,362 @@
+2025-11-11 01:15:37 - INFO - Starting run: 20251111-011537_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine
+2025-11-11 01:15:37 - INFO - Configuration:
+{
+  "experiment": {
+    "name": "swin_large_patch4_window12_384_in22k_offline",
+    "seed": 2024,
+    "deterministic": false
+  },
+  "paths": {
+    "data_root": "data/processed/offline_aug",
+    "train_csv": "data/processed/offline_aug/train_offline_aug.csv",
+    "meta_csv": "data/raw/meta.csv",
+    "image_dir": "data/processed/offline_aug/images",
+    "test_dir": "data/raw/test",
+    "output_root": "outputs"
+  },
+  "data": {
+    "num_classes": 17,
+    "input_size": 384,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "excluded_ids": [],
+    "loader": {
+      "batch_size": 12,
+      "num_workers": 8,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2
+    }
+  },
+  "split": {
+    "n_splits": 6,
+    "fold_index": 1,
+    "seed": 2024,
+    "predefined_split": "splits/fold_indices_offline.pkl"
+  },
+  "sampler": {
+    "name": "weighted_random",
+    "minority_classes": [
+      1,
+      13,
+      14
+    ],
+    "weights_power": 0.85,
+    "replacement": true
+  },
+  "augmentations": {
+    "name": "rot90_jitter_affine_rrc",
+    "use_reference_pipeline": true,
+    "random_resized_crop_scale": [
+      0.95,
+      1.0
+    ],
+    "random_resized_crop_ratio": [
+      0.9,
+      1.1
+    ],
+    "random_rotate90": true,
+    "random_rotate90_prob": 0.5,
+    "max_rotate": 12,
+    "rotate_prob": 1.0,
+    "affine_scale": [
+      0.95,
+      1.05
+    ],
+    "affine_translate": [
+      0.05,
+      0.05
+    ],
+    "horizontal_flip": true,
+    "horizontal_flip_prob": 0.5,
+    "brightness_contrast": [
+      0.1,
+      0.1
+    ],
+    "color_jitter": {
+      "p": 0.35,
+      "brightness": 0.25,
+      "contrast": 0.1,
+      "saturation": 0.15,
+      "hue": 0.0
+    },
+    "blur": {
+      "p": 0.35,
+      "blur_limit": [
+        3,
+        7
+      ],
+      "sigma_limit": [
+        0.2,
+        1.0
+      ]
+    }
+  },
+  "regularization": {
+    "mixup_alpha": 0.0,
+    "cutmix_alpha": 0.0,
+    "tag": "no-reg"
+  },
+  "model": {
+    "name": "swin_large_patch4_window12_384_in22k",
+    "pretrained": true,
+    "checkpoint": null,
+    "drop_path_rate": 0.2,
+    "use_checkpoint": true
+  },
+  "loss": {
+    "name": "cross_entropy",
+    "label_smoothing": 0.05
+  },
+  "optimizer": {
+    "name": "adamw",
+    "lr": 8e-05,
+    "weight_decay": 0.05,
+    "betas": [
+      0.9,
+      0.999
+    ]
+  },
+  "scheduler": {
+    "name": "cosine",
+    "warmup_epochs": 3,
+    "min_lr": 1e-06
+  },
+  "training": {
+    "epochs": 20,
+    "amp": true,
+    "grad_clip_norm": null,
+    "save_best_metric": "f1",
+    "validation_interval": 1,
+    "early_stopping": {
+      "patience": 3,
+      "min_delta": 0.0005,
+      "mode": "max"
+    },
+    "ema": {
+      "enabled": false
+    },
+    "swa": {
+      "enabled": false
+    }
+  },
+  "logging": {
+    "project": "document_type_classification",
+    "log_interval": 50
+  },
+  "submission": {
+    "metric_name": "f1",
+    "leaderboard_score": 0.0,
+    "tta": {
+      "enabled": true,
+      "rotations": [
+        0,
+        90,
+        180,
+        270
+      ],
+      "jitter_degrees": 0,
+      "horizontal_flip": true,
+      "vertical_flip": false
+    }
+  },
+  "performance": {
+    "allow_tf32": true,
+    "matmul_precision": "high",
+    "cudnn_benchmark": true,
+    "channels_last": true
+  }
+}
+/opt/conda/lib/python3.10/site-packages/timm/models/_factory.py:117: UserWarning: Mapping deprecated model name swin_large_patch4_window12_384_in22k to current swin_large_patch4_window12_384.ms_in22k.
+  model = create_fn(
+/opt/conda/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at /opt/conda/conda-bld/pytorch_1695392020201/work/aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+2025-11-11 01:15:57 - INFO - [Epoch 1] Step 50/972 - loss: 2.8931
+2025-11-11 01:16:12 - INFO - [Epoch 1] Step 100/972 - loss: 2.9106
+2025-11-11 01:16:27 - INFO - [Epoch 1] Step 150/972 - loss: 2.9067
+2025-11-11 01:16:43 - INFO - [Epoch 1] Step 200/972 - loss: 2.9050
+2025-11-11 01:16:58 - INFO - [Epoch 1] Step 250/972 - loss: 2.9035
+2025-11-11 01:17:13 - INFO - [Epoch 1] Step 300/972 - loss: 2.9029
+2025-11-11 01:17:29 - INFO - [Epoch 1] Step 350/972 - loss: 2.9041
+2025-11-11 01:17:44 - INFO - [Epoch 1] Step 400/972 - loss: 2.9040
+2025-11-11 01:17:59 - INFO - [Epoch 1] Step 450/972 - loss: 2.9056
+2025-11-11 01:18:15 - INFO - [Epoch 1] Step 500/972 - loss: 2.9015
+2025-11-11 01:18:30 - INFO - [Epoch 1] Step 550/972 - loss: 2.8978
+2025-11-11 01:18:45 - INFO - [Epoch 1] Step 600/972 - loss: 2.8959
+2025-11-11 01:19:01 - INFO - [Epoch 1] Step 650/972 - loss: 2.8945
+2025-11-11 01:19:16 - INFO - [Epoch 1] Step 700/972 - loss: 2.8952
+2025-11-11 01:19:31 - INFO - [Epoch 1] Step 750/972 - loss: 2.8952
+2025-11-11 01:19:47 - INFO - [Epoch 1] Step 800/972 - loss: 2.8941
+2025-11-11 01:20:02 - INFO - [Epoch 1] Step 850/972 - loss: 2.8909
+2025-11-11 01:20:17 - INFO - [Epoch 1] Step 900/972 - loss: 2.8885
+2025-11-11 01:20:33 - INFO - [Epoch 1] Step 950/972 - loss: 2.8868
+2025-11-11 01:20:40 - INFO - [Epoch 1] Step 972/972 - loss: 2.8860
+2025-11-11 01:21:08 - INFO - [Epoch 1] Top misclassified classes: 1: 137/138 (acc=0.007), 5: 137/138 (acc=0.007), 9: 137/138 (acc=0.007), 4: 137/137 (acc=0.000), 7: 137/137 (acc=0.000), 14: 137/137 (acc=0.000), 15: 137/137 (acc=0.000), 12: 136/138 (acc=0.014), 3: 136/137 (acc=0.007), 6: 135/137 (acc=0.015)
+2025-11-11 01:21:12 - INFO - Epoch 1/20 - train_loss: 2.8860 - val_loss: 2.8409 - f1: 0.0571
+2025-11-11 01:21:28 - INFO - [Epoch 2] Step 50/972 - loss: 2.5626
+2025-11-11 01:21:44 - INFO - [Epoch 2] Step 100/972 - loss: 2.1599
+2025-11-11 01:21:59 - INFO - [Epoch 2] Step 150/972 - loss: 1.9042
+2025-11-11 01:22:14 - INFO - [Epoch 2] Step 200/972 - loss: 1.7389
+2025-11-11 01:22:30 - INFO - [Epoch 2] Step 250/972 - loss: 1.6216
+2025-11-11 01:22:45 - INFO - [Epoch 2] Step 300/972 - loss: 1.5194
+2025-11-11 01:23:00 - INFO - [Epoch 2] Step 350/972 - loss: 1.4378
+2025-11-11 01:23:16 - INFO - [Epoch 2] Step 400/972 - loss: 1.3702
+2025-11-11 01:23:31 - INFO - [Epoch 2] Step 450/972 - loss: 1.3181
+2025-11-11 01:23:46 - INFO - [Epoch 2] Step 500/972 - loss: 1.2822
+2025-11-11 01:24:02 - INFO - [Epoch 2] Step 550/972 - loss: 1.2496
+2025-11-11 01:24:17 - INFO - [Epoch 2] Step 600/972 - loss: 1.2181
+2025-11-11 01:24:32 - INFO - [Epoch 2] Step 650/972 - loss: 1.1970
+2025-11-11 01:24:48 - INFO - [Epoch 2] Step 700/972 - loss: 1.1749
+2025-11-11 01:25:03 - INFO - [Epoch 2] Step 750/972 - loss: 1.1498
+2025-11-11 01:25:18 - INFO - [Epoch 2] Step 800/972 - loss: 1.1286
+2025-11-11 01:25:34 - INFO - [Epoch 2] Step 850/972 - loss: 1.1122
+2025-11-11 01:25:49 - INFO - [Epoch 2] Step 900/972 - loss: 1.0954
+2025-11-11 01:26:04 - INFO - [Epoch 2] Step 950/972 - loss: 1.0823
+2025-11-11 01:26:11 - INFO - [Epoch 2] Step 972/972 - loss: 1.0768
+2025-11-11 01:26:40 - INFO - [Epoch 2] Top misclassified classes: 7: 87/137 (acc=0.365), 3: 38/137 (acc=0.723), 4: 34/137 (acc=0.752), 14: 32/137 (acc=0.766), 1: 14/138 (acc=0.899), 11: 10/138 (acc=0.928), 6: 10/137 (acc=0.927), 12: 6/138 (acc=0.957), 10: 6/137 (acc=0.956), 9: 1/138 (acc=0.993)
+2025-11-11 01:26:44 - INFO - Epoch 2/20 - train_loss: 1.0768 - val_loss: 0.6102 - f1: 0.8958
+2025-11-11 01:27:00 - INFO - [Epoch 3] Step 50/972 - loss: 0.9169
+2025-11-11 01:27:15 - INFO - [Epoch 3] Step 100/972 - loss: 0.8942
+2025-11-11 01:27:30 - INFO - [Epoch 3] Step 150/972 - loss: 0.8587
+2025-11-11 01:27:46 - INFO - [Epoch 3] Step 200/972 - loss: 0.8362
+2025-11-11 01:28:01 - INFO - [Epoch 3] Step 250/972 - loss: 0.8372
+2025-11-11 01:28:16 - INFO - [Epoch 3] Step 300/972 - loss: 0.8316
+2025-11-11 01:28:32 - INFO - [Epoch 3] Step 350/972 - loss: 0.8382
+2025-11-11 01:28:47 - INFO - [Epoch 3] Step 400/972 - loss: 0.8360
+2025-11-11 01:29:02 - INFO - [Epoch 3] Step 450/972 - loss: 0.8279
+2025-11-11 01:29:18 - INFO - [Epoch 3] Step 500/972 - loss: 0.8264
+2025-11-11 01:29:33 - INFO - [Epoch 3] Step 550/972 - loss: 0.8230
+2025-11-11 01:29:48 - INFO - [Epoch 3] Step 600/972 - loss: 0.8162
+2025-11-11 01:30:04 - INFO - [Epoch 3] Step 650/972 - loss: 0.8071
+2025-11-11 01:30:19 - INFO - [Epoch 3] Step 700/972 - loss: 0.7988
+2025-11-11 01:30:34 - INFO - [Epoch 3] Step 750/972 - loss: 0.7943
+2025-11-11 01:30:50 - INFO - [Epoch 3] Step 800/972 - loss: 0.7921
+2025-11-11 01:31:05 - INFO - [Epoch 3] Step 850/972 - loss: 0.7870
+2025-11-11 01:31:20 - INFO - [Epoch 3] Step 900/972 - loss: 0.7829
+2025-11-11 01:31:36 - INFO - [Epoch 3] Step 950/972 - loss: 0.7775
+2025-11-11 01:31:43 - INFO - [Epoch 3] Step 972/972 - loss: 0.7779
+/opt/conda/lib/python3.10/site-packages/torch/optim/lr_scheduler.py:149: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+  warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
+2025-11-11 01:32:11 - INFO - [Epoch 3] Top misclassified classes: 7: 87/137 (acc=0.365), 3: 75/137 (acc=0.453), 4: 19/137 (acc=0.861), 12: 16/138 (acc=0.884), 14: 10/137 (acc=0.927), 11: 7/138 (acc=0.949), 13: 3/137 (acc=0.978), 1: 2/138 (acc=0.986), 8: 2/137 (acc=0.985), 10: 2/137 (acc=0.985)
+2025-11-11 01:32:14 - INFO - Epoch 3/20 - train_loss: 0.7779 - val_loss: 0.5612 - f1: 0.8971
+2025-11-11 01:32:30 - INFO - [Epoch 4] Step 50/972 - loss: 0.8232
+2025-11-11 01:32:46 - INFO - [Epoch 4] Step 100/972 - loss: 0.8073
+2025-11-11 01:33:01 - INFO - [Epoch 4] Step 150/972 - loss: 0.7896
+2025-11-11 01:33:16 - INFO - [Epoch 4] Step 200/972 - loss: 0.7842
+2025-11-11 01:33:32 - INFO - [Epoch 4] Step 250/972 - loss: 0.7782
+2025-11-11 01:33:47 - INFO - [Epoch 4] Step 300/972 - loss: 0.7745
+2025-11-11 01:34:02 - INFO - [Epoch 4] Step 350/972 - loss: 0.7640
+2025-11-11 01:34:18 - INFO - [Epoch 4] Step 400/972 - loss: 0.7603
+2025-11-11 01:34:33 - INFO - [Epoch 4] Step 450/972 - loss: 0.7528
+2025-11-11 01:34:48 - INFO - [Epoch 4] Step 500/972 - loss: 0.7497
+2025-11-11 01:35:04 - INFO - [Epoch 4] Step 550/972 - loss: 0.7532
+2025-11-11 01:35:19 - INFO - [Epoch 4] Step 600/972 - loss: 0.7477
+2025-11-11 01:35:34 - INFO - [Epoch 4] Step 650/972 - loss: 0.7487
+2025-11-11 01:35:50 - INFO - [Epoch 4] Step 700/972 - loss: 0.7497
+2025-11-11 01:36:05 - INFO - [Epoch 4] Step 750/972 - loss: 0.7472
+2025-11-11 01:36:21 - INFO - [Epoch 4] Step 800/972 - loss: 0.7479
+2025-11-11 01:36:36 - INFO - [Epoch 4] Step 850/972 - loss: 0.7444
+2025-11-11 01:36:51 - INFO - [Epoch 4] Step 900/972 - loss: 0.7453
+2025-11-11 01:37:07 - INFO - [Epoch 4] Step 950/972 - loss: 0.7461
+2025-11-11 01:37:13 - INFO - [Epoch 4] Step 972/972 - loss: 0.7446
+2025-11-11 01:37:42 - INFO - [Epoch 4] Top misclassified classes: 3: 61/137 (acc=0.555), 7: 38/137 (acc=0.723), 4: 20/137 (acc=0.854), 14: 12/137 (acc=0.912), 6: 7/137 (acc=0.949), 10: 6/137 (acc=0.956), 1: 3/138 (acc=0.978), 9: 2/138 (acc=0.986), 11: 2/138 (acc=0.986), 12: 2/138 (acc=0.986)
+2025-11-11 01:37:44 - INFO - Epoch 4/20 - train_loss: 0.7446 - val_loss: 0.5105 - f1: 0.9321
+2025-11-11 01:38:01 - INFO - [Epoch 5] Step 50/972 - loss: 0.7084
+2025-11-11 01:38:16 - INFO - [Epoch 5] Step 100/972 - loss: 0.7046
+2025-11-11 01:38:31 - INFO - [Epoch 5] Step 150/972 - loss: 0.7006
+2025-11-11 01:38:47 - INFO - [Epoch 5] Step 200/972 - loss: 0.6966
+2025-11-11 01:39:02 - INFO - [Epoch 5] Step 250/972 - loss: 0.6924
+2025-11-11 01:39:17 - INFO - [Epoch 5] Step 300/972 - loss: 0.6825
+2025-11-11 01:39:33 - INFO - [Epoch 5] Step 350/972 - loss: 0.6927
+2025-11-11 01:39:48 - INFO - [Epoch 5] Step 400/972 - loss: 0.6879
+2025-11-11 01:40:03 - INFO - [Epoch 5] Step 450/972 - loss: 0.6848
+2025-11-11 01:40:19 - INFO - [Epoch 5] Step 500/972 - loss: 0.6835
+2025-11-11 01:40:34 - INFO - [Epoch 5] Step 550/972 - loss: 0.6809
+2025-11-11 01:40:49 - INFO - [Epoch 5] Step 600/972 - loss: 0.6785
+2025-11-11 01:41:05 - INFO - [Epoch 5] Step 650/972 - loss: 0.6787
+2025-11-11 01:41:20 - INFO - [Epoch 5] Step 700/972 - loss: 0.6815
+2025-11-11 01:41:35 - INFO - [Epoch 5] Step 750/972 - loss: 0.6808
+2025-11-11 01:41:51 - INFO - [Epoch 5] Step 800/972 - loss: 0.6819
+2025-11-11 01:42:06 - INFO - [Epoch 5] Step 850/972 - loss: 0.6822
+2025-11-11 01:42:21 - INFO - [Epoch 5] Step 900/972 - loss: 0.6813
+2025-11-11 01:42:37 - INFO - [Epoch 5] Step 950/972 - loss: 0.6822
+2025-11-11 01:42:43 - INFO - [Epoch 5] Step 972/972 - loss: 0.6823
+2025-11-11 01:43:12 - INFO - [Epoch 5] Top misclassified classes: 3: 42/137 (acc=0.693), 7: 24/137 (acc=0.825), 14: 22/137 (acc=0.839), 4: 20/137 (acc=0.854), 13: 6/137 (acc=0.956), 11: 4/138 (acc=0.971), 9: 3/138 (acc=0.978), 12: 3/138 (acc=0.978), 1: 2/138 (acc=0.986), 10: 1/137 (acc=0.993)
+2025-11-11 01:43:16 - INFO - Epoch 5/20 - train_loss: 0.6823 - val_loss: 0.4718 - f1: 0.9458
+2025-11-11 01:43:32 - INFO - [Epoch 6] Step 50/972 - loss: 0.6481
+2025-11-11 01:43:47 - INFO - [Epoch 6] Step 100/972 - loss: 0.6517
+2025-11-11 01:44:03 - INFO - [Epoch 6] Step 150/972 - loss: 0.6401
+2025-11-11 01:44:18 - INFO - [Epoch 6] Step 200/972 - loss: 0.6310
+2025-11-11 01:44:33 - INFO - [Epoch 6] Step 250/972 - loss: 0.6403
+2025-11-11 01:44:49 - INFO - [Epoch 6] Step 300/972 - loss: 0.6376
+2025-11-11 01:45:04 - INFO - [Epoch 6] Step 350/972 - loss: 0.6411
+2025-11-11 01:45:19 - INFO - [Epoch 6] Step 400/972 - loss: 0.6395
+2025-11-11 01:45:35 - INFO - [Epoch 6] Step 450/972 - loss: 0.6419
+2025-11-11 01:45:50 - INFO - [Epoch 6] Step 500/972 - loss: 0.6426
+2025-11-11 01:46:05 - INFO - [Epoch 6] Step 550/972 - loss: 0.6400
+2025-11-11 01:46:21 - INFO - [Epoch 6] Step 600/972 - loss: 0.6372
+2025-11-11 01:46:36 - INFO - [Epoch 6] Step 650/972 - loss: 0.6388
+2025-11-11 01:46:51 - INFO - [Epoch 6] Step 700/972 - loss: 0.6378
+2025-11-11 01:47:07 - INFO - [Epoch 6] Step 750/972 - loss: 0.6402
+2025-11-11 01:47:22 - INFO - [Epoch 6] Step 800/972 - loss: 0.6397
+2025-11-11 01:47:37 - INFO - [Epoch 6] Step 850/972 - loss: 0.6401
+2025-11-11 01:47:53 - INFO - [Epoch 6] Step 900/972 - loss: 0.6431
+2025-11-11 01:48:08 - INFO - [Epoch 6] Step 950/972 - loss: 0.6419
+2025-11-11 01:48:15 - INFO - [Epoch 6] Step 972/972 - loss: 0.6424
+2025-11-11 01:48:43 - INFO - [Epoch 6] Top misclassified classes: 7: 46/137 (acc=0.664), 3: 25/137 (acc=0.818), 14: 24/137 (acc=0.825), 4: 22/137 (acc=0.839), 11: 2/138 (acc=0.986), 12: 2/138 (acc=0.986), 6: 2/137 (acc=0.985), 10: 2/137 (acc=0.985), 13: 2/137 (acc=0.985), 1: 1/138 (acc=0.993)
+2025-11-11 01:48:43 - INFO - Epoch 6/20 - train_loss: 0.6424 - val_loss: 0.4735 - f1: 0.9441
+2025-11-11 01:48:59 - INFO - [Epoch 7] Step 50/972 - loss: 0.6303
+2025-11-11 01:49:15 - INFO - [Epoch 7] Step 100/972 - loss: 0.6377
+2025-11-11 01:49:30 - INFO - [Epoch 7] Step 150/972 - loss: 0.6462
+2025-11-11 01:49:45 - INFO - [Epoch 7] Step 200/972 - loss: 0.6339
+2025-11-11 01:50:00 - INFO - [Epoch 7] Step 250/972 - loss: 0.6297
+2025-11-11 01:50:16 - INFO - [Epoch 7] Step 300/972 - loss: 0.6264
+2025-11-11 01:50:31 - INFO - [Epoch 7] Step 350/972 - loss: 0.6216
+2025-11-11 01:50:46 - INFO - [Epoch 7] Step 400/972 - loss: 0.6228
+2025-11-11 01:51:02 - INFO - [Epoch 7] Step 450/972 - loss: 0.6250
+2025-11-11 01:51:17 - INFO - [Epoch 7] Step 500/972 - loss: 0.6219
+2025-11-11 01:51:32 - INFO - [Epoch 7] Step 550/972 - loss: 0.6199
+2025-11-11 01:51:48 - INFO - [Epoch 7] Step 600/972 - loss: 0.6192
+2025-11-11 01:52:03 - INFO - [Epoch 7] Step 650/972 - loss: 0.6198
+2025-11-11 01:52:18 - INFO - [Epoch 7] Step 700/972 - loss: 0.6205
+2025-11-11 01:52:34 - INFO - [Epoch 7] Step 750/972 - loss: 0.6225
+2025-11-11 01:52:49 - INFO - [Epoch 7] Step 800/972 - loss: 0.6237
+2025-11-11 01:53:04 - INFO - [Epoch 7] Step 850/972 - loss: 0.6235
+2025-11-11 01:53:20 - INFO - [Epoch 7] Step 900/972 - loss: 0.6209
+2025-11-11 01:53:35 - INFO - [Epoch 7] Step 950/972 - loss: 0.6180
+2025-11-11 01:53:42 - INFO - [Epoch 7] Step 972/972 - loss: 0.6182
+2025-11-11 01:54:10 - INFO - [Epoch 7] Top misclassified classes: 3: 51/137 (acc=0.628), 7: 35/137 (acc=0.745), 14: 27/137 (acc=0.803), 6: 7/137 (acc=0.949), 4: 6/137 (acc=0.956), 10: 6/137 (acc=0.956), 11: 5/138 (acc=0.964), 9: 3/138 (acc=0.978), 12: 3/138 (acc=0.978), 1: 2/138 (acc=0.986)
+2025-11-11 01:54:10 - INFO - Epoch 7/20 - train_loss: 0.6182 - val_loss: 0.4838 - f1: 0.9355
+2025-11-11 01:54:26 - INFO - [Epoch 8] Step 50/972 - loss: 0.5916
+2025-11-11 01:54:42 - INFO - [Epoch 8] Step 100/972 - loss: 0.5913
+2025-11-11 01:54:57 - INFO - [Epoch 8] Step 150/972 - loss: 0.5760
+2025-11-11 01:55:12 - INFO - [Epoch 8] Step 200/972 - loss: 0.5783
+2025-11-11 01:55:28 - INFO - [Epoch 8] Step 250/972 - loss: 0.5842
+2025-11-11 01:55:43 - INFO - [Epoch 8] Step 300/972 - loss: 0.5844
+2025-11-11 01:55:58 - INFO - [Epoch 8] Step 350/972 - loss: 0.5848
+2025-11-11 01:56:14 - INFO - [Epoch 8] Step 400/972 - loss: 0.5848
+2025-11-11 01:56:29 - INFO - [Epoch 8] Step 450/972 - loss: 0.5870
+2025-11-11 01:56:44 - INFO - [Epoch 8] Step 500/972 - loss: 0.5933
+2025-11-11 01:57:00 - INFO - [Epoch 8] Step 550/972 - loss: 0.5920
+2025-11-11 01:57:15 - INFO - [Epoch 8] Step 600/972 - loss: 0.5888
+2025-11-11 01:57:30 - INFO - [Epoch 8] Step 650/972 - loss: 0.5927
+2025-11-11 01:57:46 - INFO - [Epoch 8] Step 700/972 - loss: 0.5928
+2025-11-11 01:58:01 - INFO - [Epoch 8] Step 750/972 - loss: 0.5955
+2025-11-11 01:58:16 - INFO - [Epoch 8] Step 800/972 - loss: 0.5951
+2025-11-11 01:58:32 - INFO - [Epoch 8] Step 850/972 - loss: 0.5963
+2025-11-11 01:58:47 - INFO - [Epoch 8] Step 900/972 - loss: 0.5959
+2025-11-11 01:59:02 - INFO - [Epoch 8] Step 950/972 - loss: 0.5981
+2025-11-11 01:59:09 - INFO - [Epoch 8] Step 972/972 - loss: 0.5976
+2025-11-11 01:59:37 - INFO - [Epoch 8] Top misclassified classes: 3: 74/137 (acc=0.460), 4: 16/137 (acc=0.883), 7: 14/137 (acc=0.898), 14: 7/137 (acc=0.949), 1: 3/138 (acc=0.978), 12: 3/138 (acc=0.978), 6: 3/137 (acc=0.978), 10: 2/137 (acc=0.985), 9: 1/138 (acc=0.993), 11: 1/138 (acc=0.993)
+2025-11-11 01:59:37 - INFO - Epoch 8/20 - train_loss: 0.5976 - val_loss: 0.4517 - f1: 0.9438
+2025-11-11 01:59:37 - INFO - Early stopping triggered (patience 3)
+2025-11-11 01:59:37 - INFO - Best epoch: 5 (0.9458)
+2025-11-11 01:59:37 - INFO - Best f1: 0.9458

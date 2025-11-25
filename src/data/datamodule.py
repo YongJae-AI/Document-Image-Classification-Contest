@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 import torch.multiprocessing as mp
 import cv2
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from torch.utils.data import DataLoader
 
 from .dataset import DocumentDataset
@@ -32,34 +32,52 @@ def create_dataloaders(cfg: Dict[str, Any]) -> Tuple[Tuple[DataLoader, DataLoade
     if excluded_ids:
         dataframe = dataframe[~dataframe["ID"].isin(excluded_ids)].reset_index(drop=True)
 
-    predefined_split = cfg["split"].get("predefined_split")
-    train_indices, valid_indices = None, None
-    if predefined_split:
-        split_path = Path(predefined_split)
-        if not split_path.exists():
-            raise FileNotFoundError(f"Predefined split file not found: {split_path}")
-        with split_path.open("rb") as f:
-            splits = pickle.load(f)
-        if not (0 <= cfg["split"]["fold_index"] < len(splits)):
-            raise ValueError(
-                f"Fold index {cfg['split']['fold_index']} out of range for predefined splits."
-            )
-        train_indices, valid_indices = splits[cfg["split"]["fold_index"]]
+    # Support full-train mode (train on all, with optional small holdout for monitoring)
+    split_cfg = cfg.get("split", {})
+    if bool(split_cfg.get("full_train", False)):
+        holdout_frac = float(split_cfg.get("full_train_holdout_fraction", 0.02) or 0.0)
+        seed = int(split_cfg.get("seed", 2024))
+        if holdout_frac > 0.0:
+            sss = StratifiedShuffleSplit(n_splits=1, test_size=holdout_frac, random_state=seed)
+            (train_indices, valid_indices), = sss.split(dataframe["ID"], dataframe["target"])
+        else:
+            # No holdout: use entire dataset for both train/valid (validation will reflect training performance)
+            train_indices = dataframe.index.values
+            valid_indices = dataframe.index.values
     else:
-        splitter = StratifiedKFold(
-            n_splits=cfg["split"]["n_splits"],
-            shuffle=True,
-            random_state=cfg["split"]["seed"],
-        )
-        for fold, (train_idx, valid_idx) in enumerate(
-            splitter.split(dataframe["ID"], dataframe["target"])
-        ):
-            if fold == cfg["split"]["fold_index"]:
-                train_indices, valid_indices = train_idx, valid_idx
-                break
+        predefined_split = split_cfg.get("predefined_split")
+        train_indices, valid_indices = None, None
+        if predefined_split:
+            split_path = Path(predefined_split)
+            if not split_path.exists():
+                raise FileNotFoundError(f"Predefined split file not found: {split_path}")
+            with split_path.open("rb") as f:
+                splits = pickle.load(f)
+            if not (0 <= split_cfg["fold_index"] < len(splits)):
+                raise ValueError(
+                    f"Fold index {split_cfg['fold_index']} out of range for predefined splits."
+                )
+            block = splits[split_cfg["fold_index"]]
+            if isinstance(block, (list, tuple)) and len(block) >= 2:
+                train_indices, valid_indices = block[0], block[1]
+            elif isinstance(block, dict):
+                train_indices = block.get("train") or block.get("train_idx")
+                valid_indices = block.get("val") or block.get("valid") or block.get("val_idx")
+        else:
+            splitter = StratifiedKFold(
+                n_splits=split_cfg["n_splits"],
+                shuffle=True,
+                random_state=split_cfg["seed"],
+            )
+            for fold, (train_idx, valid_idx) in enumerate(
+                splitter.split(dataframe["ID"], dataframe["target"])
+            ):
+                if fold == split_cfg["fold_index"]:
+                    train_indices, valid_indices = train_idx, valid_idx
+                    break
 
-    if train_indices is None or valid_indices is None:
-        raise ValueError(f"Invalid fold index: {cfg['split']['fold_index']}")
+        if train_indices is None or valid_indices is None:
+            raise ValueError(f"Invalid fold index: {split_cfg.get('fold_index')}")
 
     train_df = dataframe.iloc[train_indices].reset_index(drop=True)
     valid_df = dataframe.iloc[valid_indices].reset_index(drop=True)

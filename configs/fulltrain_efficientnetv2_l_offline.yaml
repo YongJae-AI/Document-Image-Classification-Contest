@@ -1,0 +1,123 @@
+experiment:
+  name: efficientnetv2_l_fulltrain_384
+  seed: 2024
+  deterministic: false
+
+paths:
+  data_root: data/processed/offline_aug
+  train_csv: data/processed/offline_aug/train_offline_aug.csv
+  meta_csv: data/raw/meta.csv
+  image_dir: data/processed/offline_aug/images
+  test_dir: data/raw/test
+  output_root: outputs
+
+data:
+  num_classes: 17
+  input_size: 384
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  excluded_ids: []
+  loader:
+    batch_size: 10
+    num_workers: 8
+    pin_memory: true
+    persistent_workers: true
+    prefetch_factor: 3
+    timeout: 120
+    mp_context: spawn
+
+split:
+  full_train: true
+  full_train_holdout_fraction: 0.02
+  seed: 2024
+
+sampler:
+  name: weighted_random
+  minority_classes: [1, 13, 14]
+  weights_power: 0.85
+  replacement: true
+
+augmentations:
+  name: rot90_jitter_affine_rrc
+  use_reference_pipeline: true
+  random_resized_crop_scale: [0.92, 1.0]
+  random_resized_crop_ratio: [0.85, 1.15]
+  random_rotate90: true
+  random_rotate90_prob: 0.5
+  max_rotate: 12
+  rotate_prob: 1.0
+  affine_scale: [0.9, 1.1]
+  affine_translate: [0.08, 0.08]
+  horizontal_flip: true
+  horizontal_flip_prob: 0.5
+  brightness_contrast: [0.12, 0.12]
+  color_jitter:
+    p: 0.4
+    brightness: 0.3
+    contrast: 0.15
+    saturation: 0.2
+    hue: 0.02
+  blur:
+    p: 0.35
+    blur_limit: [3, 7]
+    sigma_limit: [0.2, 1.0]
+
+regularization:
+  mixup_alpha: 0.1
+  cutmix_alpha: 0.0
+  tag: mixup_only
+
+model:
+  name: tf_efficientnetv2_l.in21k_ft_in1k
+  pretrained: true
+  drop_rate: 0.4
+  drop_path_rate: 0.25
+
+loss:
+  name: cross_entropy
+  label_smoothing: 0.05
+
+optimizer:
+  name: adamw
+  lr: 0.0002
+  weight_decay: 0.05
+  betas: [0.9, 0.999]
+
+scheduler:
+  name: cosine
+  warmup_epochs: 3
+  min_lr: 1.0e-6
+
+training:
+  epochs: 20
+  amp: true
+  grad_clip_norm: 1.0
+  save_best_metric: f1
+  validation_interval: 1
+  early_stopping: { }
+  ema:
+    enabled: false
+  swa:
+    enabled: false
+
+logging:
+  project: document_type_classification
+  log_interval: 50
+  tensorboard: true
+
+submission:
+  metric_name: f1
+  leaderboard_score: 0.0
+  tta:
+    enabled: true
+    rotations: [0, 90, 180, 270]
+    jitter_degrees: 0
+    horizontal_flip: true
+    vertical_flip: false
+
+performance:
+  allow_tf32: true
+  matmul_precision: high
+  cudnn_benchmark: true
+  channels_last: true
+

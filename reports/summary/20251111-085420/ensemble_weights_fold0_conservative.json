@@ -1,0 +1,104 @@
+{
+  "0": {
+    "swin_large": 0.41000000000000003,
+    "effnet_b7": 0.32999999999999996,
+    "convnextv2": 0.13,
+    "effnetv2_l": 0.13
+  },
+  "1": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "2": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "3": {
+    "effnet_b7": 0.53,
+    "effnetv2_l": 0.29,
+    "convnextv2": 0.09000000000000004,
+    "swin_large": 0.09000000000000004
+  },
+  "4": {
+    "effnet_b7": 0.45,
+    "convnextv2": 0.29,
+    "effnetv2_l": 0.13,
+    "swin_large": 0.13
+  },
+  "5": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "6": {
+    "effnetv2_l": 0.41000000000000003,
+    "effnet_b7": 0.32999999999999996,
+    "swin_large": 0.13,
+    "convnextv2": 0.13
+  },
+  "7": {
+    "convnextv2": 0.53,
+    "swin_large": 0.29,
+    "effnetv2_l": 0.09000000000000004,
+    "effnet_b7": 0.09000000000000004
+  },
+  "8": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "9": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "10": {
+    "swin_large": 0.41000000000000003,
+    "convnextv2": 0.32999999999999996,
+    "effnetv2_l": 0.13,
+    "effnet_b7": 0.13
+  },
+  "11": {
+    "swin_large": 0.41000000000000003,
+    "convnextv2": 0.32999999999999996,
+    "effnetv2_l": 0.13,
+    "effnet_b7": 0.13
+  },
+  "12": {
+    "convnextv2": 0.45,
+    "effnetv2_l": 0.29,
+    "effnet_b7": 0.13,
+    "swin_large": 0.13
+  },
+  "13": {
+    "effnetv2_l": 0.45,
+    "swin_large": 0.29,
+    "convnextv2": 0.13,
+    "effnet_b7": 0.13
+  },
+  "14": {
+    "swin_large": 0.41000000000000003,
+    "effnet_b7": 0.32999999999999996,
+    "convnextv2": 0.13,
+    "effnetv2_l": 0.13
+  },
+  "15": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  },
+  "16": {
+    "swin_large": 0.41000000000000003,
+    "effnetv2_l": 0.32999999999999996,
+    "effnet_b7": 0.13,
+    "convnextv2": 0.13
+  }
+}

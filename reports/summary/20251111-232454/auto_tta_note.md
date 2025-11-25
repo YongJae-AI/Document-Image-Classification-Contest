@@ -1,0 +1,4 @@
+Run: 20251111-152233_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine
+Scale: 384
+Cache: None
+Submission: 20251111-232453_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_convnextv2_384_tta.csv

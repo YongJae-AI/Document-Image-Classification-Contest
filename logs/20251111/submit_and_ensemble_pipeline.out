@@ -1,0 +1,236 @@
+[Submit] effnet_b7 run=20251111-092056_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine scale=528
+/opt/conda/lib/python3.10/site-packages/timm/models/_factory.py:117: UserWarning: Mapping deprecated model name tf_efficientnet_b7_ns to current tf_efficientnet_b7.ns_jft_in1k.
+  model = create_fn(
+[create_submission] Progress: 31/1570 batches (2.0%) elapsed=0.1m
+[create_submission] Progress: 62/1570 batches (3.9%) elapsed=0.3m
+[create_submission] Progress: 93/1570 batches (5.9%) elapsed=0.4m
+[create_submission] Progress: 124/1570 batches (7.9%) elapsed=0.5m
+[create_submission] Progress: 155/1570 batches (9.9%) elapsed=0.6m
+[create_submission] Progress: 186/1570 batches (11.8%) elapsed=0.7m
+[create_submission] Progress: 217/1570 batches (13.8%) elapsed=0.8m
+[create_submission] Progress: 248/1570 batches (15.8%) elapsed=1.0m
+[create_submission] Progress: 279/1570 batches (17.8%) elapsed=1.1m
+[create_submission] Progress: 310/1570 batches (19.7%) elapsed=1.2m
+[create_submission] Progress: 341/1570 batches (21.7%) elapsed=1.3m
+[create_submission] Progress: 372/1570 batches (23.7%) elapsed=1.4m
+[create_submission] Progress: 403/1570 batches (25.7%) elapsed=1.6m
+[create_submission] Progress: 434/1570 batches (27.6%) elapsed=1.7m
+[create_submission] Progress: 465/1570 batches (29.6%) elapsed=1.8m
+[create_submission] Progress: 496/1570 batches (31.6%) elapsed=1.9m
+[create_submission] Progress: 527/1570 batches (33.6%) elapsed=2.0m
+[create_submission] Progress: 558/1570 batches (35.5%) elapsed=2.1m
+[create_submission] Progress: 589/1570 batches (37.5%) elapsed=2.3m
+[create_submission] Progress: 620/1570 batches (39.5%) elapsed=2.4m
+[create_submission] Progress: 651/1570 batches (41.5%) elapsed=2.5m
+[create_submission] Progress: 682/1570 batches (43.4%) elapsed=2.6m
+[create_submission] Progress: 713/1570 batches (45.4%) elapsed=2.7m
+[create_submission] Progress: 744/1570 batches (47.4%) elapsed=2.9m
+[create_submission] Progress: 775/1570 batches (49.4%) elapsed=3.0m
+[create_submission] Progress: 806/1570 batches (51.3%) elapsed=3.1m
+[create_submission] Progress: 837/1570 batches (53.3%) elapsed=3.2m
+[create_submission] Progress: 868/1570 batches (55.3%) elapsed=3.3m
+[create_submission] Progress: 899/1570 batches (57.3%) elapsed=3.5m
+[create_submission] Progress: 930/1570 batches (59.2%) elapsed=3.6m
+[create_submission] Progress: 961/1570 batches (61.2%) elapsed=3.7m
+[create_submission] Progress: 992/1570 batches (63.2%) elapsed=3.8m
+[create_submission] Progress: 1023/1570 batches (65.2%) elapsed=3.9m
+[create_submission] Progress: 1054/1570 batches (67.1%) elapsed=4.0m
+[create_submission] Progress: 1085/1570 batches (69.1%) elapsed=4.2m
+[create_submission] Progress: 1116/1570 batches (71.1%) elapsed=4.3m
+[create_submission] Progress: 1147/1570 batches (73.1%) elapsed=4.4m
+[create_submission] Progress: 1178/1570 batches (75.0%) elapsed=4.5m
+[create_submission] Progress: 1209/1570 batches (77.0%) elapsed=4.6m
+[create_submission] Progress: 1240/1570 batches (79.0%) elapsed=4.8m
+[create_submission] Progress: 1271/1570 batches (81.0%) elapsed=4.9m
+[create_submission] Progress: 1302/1570 batches (82.9%) elapsed=5.0m
+[create_submission] Progress: 1333/1570 batches (84.9%) elapsed=5.1m
+[create_submission] Progress: 1364/1570 batches (86.9%) elapsed=5.2m
+[create_submission] Progress: 1395/1570 batches (88.9%) elapsed=5.4m
+[create_submission] Progress: 1426/1570 batches (90.8%) elapsed=5.5m
+[create_submission] Progress: 1457/1570 batches (92.8%) elapsed=5.6m
+[create_submission] Progress: 1488/1570 batches (94.8%) elapsed=5.7m
+[create_submission] Progress: 1519/1570 batches (96.8%) elapsed=5.8m
+[create_submission] Progress: 1550/1570 batches (98.7%) elapsed=6.0m
+[create_submission] Progress: 1570/1570 batches (100.0%) elapsed=6.0m
+[create_submission] Saved CSV: outputs/submissions/20251111-230821_tf_efficientnet_b7_ns_528px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_1.0000_result(0.0000)_effb7_528_tta_no_denoise.csv
+[create_submission] Saved logits: outputs/logits/20251111-230821_tf_efficientnet_b7_ns_528px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_1.0000_result(0.0000)_effb7_528_tta_no_denoise.npy
+Saved submission to outputs/submissions/20251111-230821_tf_efficientnet_b7_ns_528px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_1.0000_result(0.0000)_effb7_528_tta_no_denoise.csv
+Temperature scaling skipped or T=1.0
+Done. Submission: /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-230821_tf_efficientnet_b7_ns_528px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_1.0000_result(0.0000)_effb7_528_tta_no_denoise.csv
+[Submit] swin_large run=20251111-110039_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine scale=384
+/opt/conda/lib/python3.10/site-packages/timm/models/_factory.py:117: UserWarning: Mapping deprecated model name swin_large_patch4_window12_384_in22k to current swin_large_patch4_window12_384.ms_in22k.
+  model = create_fn(
+/opt/conda/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at /opt/conda/conda-bld/pytorch_1695392020201/work/aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+[create_submission] Progress: 31/1570 batches (2.0%) elapsed=0.2m
+[create_submission] Progress: 62/1570 batches (3.9%) elapsed=0.3m
+[create_submission] Progress: 93/1570 batches (5.9%) elapsed=0.5m
+[create_submission] Progress: 124/1570 batches (7.9%) elapsed=0.7m
+[create_submission] Progress: 155/1570 batches (9.9%) elapsed=0.8m
+[create_submission] Progress: 186/1570 batches (11.8%) elapsed=1.0m
+[create_submission] Progress: 217/1570 batches (13.8%) elapsed=1.2m
+[create_submission] Progress: 248/1570 batches (15.8%) elapsed=1.3m
+[create_submission] Progress: 279/1570 batches (17.8%) elapsed=1.5m
+[create_submission] Progress: 310/1570 batches (19.7%) elapsed=1.7m
+[create_submission] Progress: 341/1570 batches (21.7%) elapsed=1.8m
+[create_submission] Progress: 372/1570 batches (23.7%) elapsed=2.0m
+[create_submission] Progress: 403/1570 batches (25.7%) elapsed=2.2m
+[create_submission] Progress: 434/1570 batches (27.6%) elapsed=2.3m
+[create_submission] Progress: 465/1570 batches (29.6%) elapsed=2.5m
+[create_submission] Progress: 496/1570 batches (31.6%) elapsed=2.7m
+[create_submission] Progress: 527/1570 batches (33.6%) elapsed=2.8m
+[create_submission] Progress: 558/1570 batches (35.5%) elapsed=3.0m
+[create_submission] Progress: 589/1570 batches (37.5%) elapsed=3.2m
+[create_submission] Progress: 620/1570 batches (39.5%) elapsed=3.3m
+[create_submission] Progress: 651/1570 batches (41.5%) elapsed=3.5m
+[create_submission] Progress: 682/1570 batches (43.4%) elapsed=3.6m
+[create_submission] Progress: 713/1570 batches (45.4%) elapsed=3.8m
+[create_submission] Progress: 744/1570 batches (47.4%) elapsed=4.0m
+[create_submission] Progress: 775/1570 batches (49.4%) elapsed=4.1m
+[create_submission] Progress: 806/1570 batches (51.3%) elapsed=4.3m
+[create_submission] Progress: 837/1570 batches (53.3%) elapsed=4.5m
+[create_submission] Progress: 868/1570 batches (55.3%) elapsed=4.6m
+[create_submission] Progress: 899/1570 batches (57.3%) elapsed=4.8m
+[create_submission] Progress: 930/1570 batches (59.2%) elapsed=5.0m
+[create_submission] Progress: 961/1570 batches (61.2%) elapsed=5.1m
+[create_submission] Progress: 992/1570 batches (63.2%) elapsed=5.3m
+[create_submission] Progress: 1023/1570 batches (65.2%) elapsed=5.5m
+[create_submission] Progress: 1054/1570 batches (67.1%) elapsed=5.6m
+[create_submission] Progress: 1085/1570 batches (69.1%) elapsed=5.8m
+[create_submission] Progress: 1116/1570 batches (71.1%) elapsed=6.0m
+[create_submission] Progress: 1147/1570 batches (73.1%) elapsed=6.1m
+[create_submission] Progress: 1178/1570 batches (75.0%) elapsed=6.3m
+[create_submission] Progress: 1209/1570 batches (77.0%) elapsed=6.5m
+[create_submission] Progress: 1240/1570 batches (79.0%) elapsed=6.6m
+[create_submission] Progress: 1271/1570 batches (81.0%) elapsed=6.8m
+[create_submission] Progress: 1302/1570 batches (82.9%) elapsed=7.0m
+[create_submission] Progress: 1333/1570 batches (84.9%) elapsed=7.1m
+[create_submission] Progress: 1364/1570 batches (86.9%) elapsed=7.3m
+[create_submission] Progress: 1395/1570 batches (88.9%) elapsed=7.5m
+[create_submission] Progress: 1426/1570 batches (90.8%) elapsed=7.6m
+[create_submission] Progress: 1457/1570 batches (92.8%) elapsed=7.8m
+[create_submission] Progress: 1488/1570 batches (94.8%) elapsed=7.9m
+[create_submission] Progress: 1519/1570 batches (96.8%) elapsed=8.1m
+[create_submission] Progress: 1550/1570 batches (98.7%) elapsed=8.3m
+[create_submission] Progress: 1570/1570 batches (100.0%) elapsed=8.4m
+[create_submission] Saved CSV: outputs/submissions/20251111-231654_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_swinl_384_tta.csv
+[create_submission] Saved logits: outputs/logits/20251111-231654_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_swinl_384_tta.npy
+Saved submission to outputs/submissions/20251111-231654_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_swinl_384_tta.csv
+Temperature scaling skipped or T=1.0
+Done. Submission: /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-231654_swin_large_patch4_window12_384_in22k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_swinl_384_tta.csv
+[Submit] convnextv2 run=20251111-152233_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine scale=384
+[create_submission] Progress: 31/1570 batches (2.0%) elapsed=0.2m
+[create_submission] Progress: 62/1570 batches (3.9%) elapsed=0.3m
+[create_submission] Progress: 93/1570 batches (5.9%) elapsed=0.5m
+[create_submission] Progress: 124/1570 batches (7.9%) elapsed=0.6m
+[create_submission] Progress: 155/1570 batches (9.9%) elapsed=0.8m
+[create_submission] Progress: 186/1570 batches (11.8%) elapsed=0.9m
+[create_submission] Progress: 217/1570 batches (13.8%) elapsed=1.1m
+[create_submission] Progress: 248/1570 batches (15.8%) elapsed=1.2m
+[create_submission] Progress: 279/1570 batches (17.8%) elapsed=1.4m
+[create_submission] Progress: 310/1570 batches (19.7%) elapsed=1.6m
+[create_submission] Progress: 341/1570 batches (21.7%) elapsed=1.7m
+[create_submission] Progress: 372/1570 batches (23.7%) elapsed=1.9m
+[create_submission] Progress: 403/1570 batches (25.7%) elapsed=2.0m
+[create_submission] Progress: 434/1570 batches (27.6%) elapsed=2.2m
+[create_submission] Progress: 465/1570 batches (29.6%) elapsed=2.3m
+[create_submission] Progress: 496/1570 batches (31.6%) elapsed=2.5m
+[create_submission] Progress: 527/1570 batches (33.6%) elapsed=2.6m
+[create_submission] Progress: 558/1570 batches (35.5%) elapsed=2.8m
+[create_submission] Progress: 589/1570 batches (37.5%) elapsed=2.9m
+[create_submission] Progress: 620/1570 batches (39.5%) elapsed=3.1m
+[create_submission] Progress: 651/1570 batches (41.5%) elapsed=3.2m
+[create_submission] Progress: 682/1570 batches (43.4%) elapsed=3.4m
+[create_submission] Progress: 713/1570 batches (45.4%) elapsed=3.6m
+[create_submission] Progress: 744/1570 batches (47.4%) elapsed=3.7m
+[create_submission] Progress: 775/1570 batches (49.4%) elapsed=3.9m
+[create_submission] Progress: 806/1570 batches (51.3%) elapsed=4.0m
+[create_submission] Progress: 837/1570 batches (53.3%) elapsed=4.2m
+[create_submission] Progress: 868/1570 batches (55.3%) elapsed=4.3m
+[create_submission] Progress: 899/1570 batches (57.3%) elapsed=4.5m
+[create_submission] Progress: 930/1570 batches (59.2%) elapsed=4.6m
+[create_submission] Progress: 961/1570 batches (61.2%) elapsed=4.8m
+[create_submission] Progress: 992/1570 batches (63.2%) elapsed=4.9m
+[create_submission] Progress: 1023/1570 batches (65.2%) elapsed=5.1m
+[create_submission] Progress: 1054/1570 batches (67.1%) elapsed=5.2m
+[create_submission] Progress: 1085/1570 batches (69.1%) elapsed=5.4m
+[create_submission] Progress: 1116/1570 batches (71.1%) elapsed=5.6m
+[create_submission] Progress: 1147/1570 batches (73.1%) elapsed=5.7m
+[create_submission] Progress: 1178/1570 batches (75.0%) elapsed=5.9m
+[create_submission] Progress: 1209/1570 batches (77.0%) elapsed=6.0m
+[create_submission] Progress: 1240/1570 batches (79.0%) elapsed=6.2m
+[create_submission] Progress: 1271/1570 batches (81.0%) elapsed=6.3m
+[create_submission] Progress: 1302/1570 batches (82.9%) elapsed=6.5m
+[create_submission] Progress: 1333/1570 batches (84.9%) elapsed=6.6m
+[create_submission] Progress: 1364/1570 batches (86.9%) elapsed=6.8m
+[create_submission] Progress: 1395/1570 batches (88.9%) elapsed=6.9m
+[create_submission] Progress: 1426/1570 batches (90.8%) elapsed=7.1m
+[create_submission] Progress: 1457/1570 batches (92.8%) elapsed=7.3m
+[create_submission] Progress: 1488/1570 batches (94.8%) elapsed=7.4m
+[create_submission] Progress: 1519/1570 batches (96.8%) elapsed=7.6m
+[create_submission] Progress: 1550/1570 batches (98.7%) elapsed=7.7m
+[create_submission] Progress: 1570/1570 batches (100.0%) elapsed=7.8m
+[create_submission] Saved CSV: outputs/submissions/20251111-232453_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_convnextv2_384_tta.csv
+[create_submission] Saved logits: outputs/logits/20251111-232453_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_convnextv2_384_tta.npy
+Saved submission to outputs/submissions/20251111-232453_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_convnextv2_384_tta.csv
+Temperature scaling skipped or T=1.0
+Done. Submission: /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-232453_convnextv2_large.fcmae_ft_in22k_in1k_384px_rot90_jitter_affine_rrc_no-reg_ls0.05_cosine_f1_1.0000_result(0.0000)_convnextv2_384_tta.csv
+[Submit] effnetv2_l run=20251111-175917_tf_efficientnetv2_l.in21k_ft_in1k_384px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine scale=384
+[create_submission] Progress: 31/1570 batches (2.0%) elapsed=0.1m
+[create_submission] Progress: 62/1570 batches (3.9%) elapsed=0.2m
+[create_submission] Progress: 93/1570 batches (5.9%) elapsed=0.3m
+[create_submission] Progress: 124/1570 batches (7.9%) elapsed=0.4m
+[create_submission] Progress: 155/1570 batches (9.9%) elapsed=0.5m
+[create_submission] Progress: 186/1570 batches (11.8%) elapsed=0.6m
+[create_submission] Progress: 217/1570 batches (13.8%) elapsed=0.7m
+[create_submission] Progress: 248/1570 batches (15.8%) elapsed=0.7m
+[create_submission] Progress: 279/1570 batches (17.8%) elapsed=0.8m
+[create_submission] Progress: 310/1570 batches (19.7%) elapsed=0.9m
+[create_submission] Progress: 341/1570 batches (21.7%) elapsed=1.0m
+[create_submission] Progress: 372/1570 batches (23.7%) elapsed=1.1m
+[create_submission] Progress: 403/1570 batches (25.7%) elapsed=1.2m
+[create_submission] Progress: 434/1570 batches (27.6%) elapsed=1.3m
+[create_submission] Progress: 465/1570 batches (29.6%) elapsed=1.4m
+[create_submission] Progress: 496/1570 batches (31.6%) elapsed=1.5m
+[create_submission] Progress: 527/1570 batches (33.6%) elapsed=1.6m
+[create_submission] Progress: 558/1570 batches (35.5%) elapsed=1.7m
+[create_submission] Progress: 589/1570 batches (37.5%) elapsed=1.8m
+[create_submission] Progress: 620/1570 batches (39.5%) elapsed=1.9m
+[create_submission] Progress: 651/1570 batches (41.5%) elapsed=2.0m
+[create_submission] Progress: 682/1570 batches (43.4%) elapsed=2.0m
+[create_submission] Progress: 713/1570 batches (45.4%) elapsed=2.1m
+[create_submission] Progress: 744/1570 batches (47.4%) elapsed=2.2m
+[create_submission] Progress: 775/1570 batches (49.4%) elapsed=2.3m
+[create_submission] Progress: 806/1570 batches (51.3%) elapsed=2.4m
+[create_submission] Progress: 837/1570 batches (53.3%) elapsed=2.5m
+[create_submission] Progress: 868/1570 batches (55.3%) elapsed=2.6m
+[create_submission] Progress: 899/1570 batches (57.3%) elapsed=2.7m
+[create_submission] Progress: 930/1570 batches (59.2%) elapsed=2.8m
+[create_submission] Progress: 961/1570 batches (61.2%) elapsed=2.9m
+[create_submission] Progress: 992/1570 batches (63.2%) elapsed=3.0m
+[create_submission] Progress: 1023/1570 batches (65.2%) elapsed=3.1m
+[create_submission] Progress: 1054/1570 batches (67.1%) elapsed=3.2m
+[create_submission] Progress: 1085/1570 batches (69.1%) elapsed=3.3m
+[create_submission] Progress: 1116/1570 batches (71.1%) elapsed=3.3m
+[create_submission] Progress: 1147/1570 batches (73.1%) elapsed=3.4m
+[create_submission] Progress: 1178/1570 batches (75.0%) elapsed=3.5m
+[create_submission] Progress: 1209/1570 batches (77.0%) elapsed=3.6m
+[create_submission] Progress: 1240/1570 batches (79.0%) elapsed=3.7m
+[create_submission] Progress: 1271/1570 batches (81.0%) elapsed=3.8m
+[create_submission] Progress: 1302/1570 batches (82.9%) elapsed=3.9m
+[create_submission] Progress: 1333/1570 batches (84.9%) elapsed=4.0m
+[create_submission] Progress: 1364/1570 batches (86.9%) elapsed=4.1m
+[create_submission] Progress: 1395/1570 batches (88.9%) elapsed=4.2m
+[create_submission] Progress: 1426/1570 batches (90.8%) elapsed=4.3m
+[create_submission] Progress: 1457/1570 batches (92.8%) elapsed=4.4m
+[create_submission] Progress: 1488/1570 batches (94.8%) elapsed=4.5m
+[create_submission] Progress: 1519/1570 batches (96.8%) elapsed=4.6m
+[create_submission] Progress: 1550/1570 batches (98.7%) elapsed=4.7m
+[create_submission] Progress: 1570/1570 batches (100.0%) elapsed=4.7m
+[create_submission] Saved CSV: outputs/submissions/20251111-232946_tf_efficientnetv2_l.in21k_ft_in1k_384px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_0.9964_result(0.0000)_effv2l_384_tta.csv
+[create_submission] Saved logits: outputs/logits/20251111-232946_tf_efficientnetv2_l.in21k_ft_in1k_384px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_0.9964_result(0.0000)_effv2l_384_tta.npy
+Saved submission to outputs/submissions/20251111-232946_tf_efficientnetv2_l.in21k_ft_in1k_384px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_0.9964_result(0.0000)_effv2l_384_tta.csv
+Temperature scaling skipped or T=1.0
+Done. Submission: /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-232946_tf_efficientnetv2_l.in21k_ft_in1k_384px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_0.9964_result(0.0000)_effv2l_384_tta.csv
+Saved ensemble submission to /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-232947_perclass_ensemble_uniform.csv
+[Ensemble] Saved: /root/Computer_Vision_Contest-Private-/outputs/submissions/20251111-232947_perclass_ensemble_uniform.csv

@@ -1,0 +1,4 @@
+Run: 20251111-092056_tf_efficientnet_b7_ns_448px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine
+Scale: 528
+Cache: None
+Submission: 20251111-230821_tf_efficientnet_b7_ns_528px_rot90_jitter_affine_rrc_mixup_only_ls0.05_cosine_f1_1.0000_result(0.0000)_effb7_528_tta_no_denoise.csv
